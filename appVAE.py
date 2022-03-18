@@ -288,7 +288,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
         st.plotly_chart(map_box, use_container_width=True)
         
-        uniques = list(table['Sel'].unique())
+        uniques = list(table[ratio_vio_sel1].unique())
         cou_sel = st.selectbox("Id to explore", ['All ids'] + uniques, 0)
         if cou_sel == 'All ids':
             if ratio_vio_sel2 == '-':
@@ -298,10 +298,10 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                     title = 'Violin plot for the created ratio')
         else:
             if ratio_vio_sel2 == '-':
-                fig_vio = px.violin(table[table['Sel'] == cou_sel], y = new_ratio_name, x = 'Sel', box = True, points = 'suspectedoutliers', 
+                fig_vio = px.violin(table[table[ratio_vio_sel1] == cou_sel], y = new_ratio_name, x = ratio_vio_sel1, box = True, points = 'suspectedoutliers', 
                                     title = 'Violin plot for the created ratio')
             else:
-                fig_vio = px.violin(table[table['Sel'] == cou_sel], y = new_ratio_name, x = 'Sel', color = table[table['Sel'] == cou_sel][ratio_vio_sel2], 
+                fig_vio = px.violin(table[table[ratio_vio_sel1] == cou_sel], y = new_ratio_name, x = ratio_vio_sel1, color = table[table['Sel'] == cou_sel][ratio_vio_sel2], 
                                     box = True, points = 'suspectedoutliers', title = 'Violin plot for the created ratio')
         st.plotly_chart(fig_vio, use_container_width=True)
 
