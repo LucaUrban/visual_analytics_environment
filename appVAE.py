@@ -879,37 +879,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     st.plotly_chart(px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_feature, 'Reference year']], 
                                             x = 'Reference year', y = con_checks_feature), use_container_width=True)
 
-                cols_pr_inst = st.multiselect('Choose the variables', col_mul); dict_pr_inst = {}
-                for col in cols_pr_inst:
-                    dict_flags[col] = dict()
-                    for cc in countries:
-                        country_table = table[table[country_sel_col] == cc][[con_checks_id_col, col]]
-                        inst_lower = set(country_table[country_table[col] <= country_table[col].quantile(0.05)][con_checks_id_col].values)
-                        inst_upper = set(country_table[country_table[col] >= country_table[col].quantile(1 - (0.05))][con_checks_id_col].values)
-                        dict_flags[col][cc] = inst_lower.union(inst_upper)
-                    for cat in categories:
-                        cat_table = table[table[cat_sel_col] == cat][[con_checks_id_col, col]]
-                        inst_lower = set(cat_table[cat_table[col] <= cat_table[col].quantile(0.05)][con_checks_id_col].values)
-                        inst_upper = set(cat_table[cat_table[col] >= cat_table[col].quantile(1 - (0.05))][con_checks_id_col].values)
-                        dict_flags[col][cat] = inst_lower.union(inst_upper)
-
-                    dict_check_flags = {}; set_app = set()
-                    for cc in countries:
-                        set_app = set_app.union(dict_flags[col][cc])
-                    for cat in categories:
-                        set_app = set_app.union(dict_flags[col][cat])
-                    dict_check_flags[col] = set_app
-
-                    for inst in dict_check_flags[col]:
-                        if inst not in dict_pr_inst.keys():
-                            dict_pr_inst[inst] = [col]
-                        else:
-                            dict_pr_inst[inst].append(col)
-
-                dict_pr_inst = dict(sorted(dict_pr_inst.items(), key = lambda item: len(item[1]), reverse = True))
-                dict_pr_inst = {k: [len(v), ' '.join(v)] for k, v in dict_pr_inst.items()}
-                st.table(pd.DataFrame(dict_pr_inst.values(), index = dict_pr_inst.keys(), columns = ['# of problems', 'Probematic variables']).head(25))
-
                 st.write('To download the results select a time variable and then click the Download data button')
                 left1, right1 = st.columns(2)
                 with left1:
@@ -1157,100 +1126,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_features, 'Reference year']], x = 'Reference year', y = con_checks_features)
             line_trend_ch_inst.update_yaxes(range = [0, max(table[table[con_checks_id_col] == trend_inst][con_checks_features].values) + (.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_features].values))])
             st.plotly_chart(line_trend_ch_inst, use_container_width=True)
-            
-            cols_pr_inst = st.multiselect('Choose the variables', col_mul); dict_pr_inst = {}
-            for col in cols_pr_inst:
-                for id_inst in table[con_checks_id_col].unique():
-                    # calculations of the geometric mean
-                    inst = table[table[con_checks_id_col] == id_inst][col].values[::-1]
-                    geo_mean_vec = np.delete(inst, np.where((inst == 0) | (np.isnan(inst))))
-                    if geo_mean_vec.shape[0] != 0:
-                        res_ind[id_inst] = math.pow(math.fabs(np.prod(geo_mean_vec)), 1/geo_mean_vec.shape[0])
-                    else:
-                        res_ind[id_inst] = np.nan
-                        
-                indices = pd.DataFrame(res_ind.values(), index = res_ind.keys(), columns = [col])
-                indices.drop(index = set(indices[(pd.isna(indices[col])) | (indices[col] <= indices.quantile(0.02).values[0])].index), axis = 0, inplace = True)
-
-                res = dict()
-                # does the calculation with the delta+ and delta-minus for the multiannual checks and stores it into a dictionary 
-                for id_inst in indices.index.values:
-                    inst = table[(table[con_checks_id_col] == id_inst) & (-pd.isna(table[col]))][col].values
-                    num_row = len(inst); delta_pos = list(); delta_neg = list()
-                    for i in range(1, num_row):
-                        if inst[num_row - i - 1] - inst[num_row - i] < 0:
-                            delta_neg.append(round(inst[num_row - i - 1] - inst[num_row - i], 2))
-                        else:
-                            delta_pos.append(round(inst[num_row - i - 1] - inst[num_row - i], 2))
-                    res[id_inst] = [delta_pos, delta_neg]
-
-                DV = dict() # the dictionary in wich we'll store all the DV and further the DM values for the variability from years
-                for key, value in res.items():
-                    res_par = 0
-                    if len(value[0]) != 0 and len(value[1]) != 0:
-                        res_par = sum(value[0]) * sum(value[1])
-                    DV[key] = round(math.fabs(res_par)/indices[col][key] ** 1.5, 3)
-       
-                DV_df = pd.DataFrame(DV.values(), index = DV.keys(), columns = [col])
-                dict_check_flags = set(DV_df[DV_df[col] >= DV_df[col].quantile(0.95)].index)
-            
-                for inst in dict_check_flags:
-                    if inst not in dict_pr_inst.keys():
-                        dict_pr_inst[inst] = [col]
-                    else:
-                        dict_pr_inst[inst].append(col)
-                
-            dict_pr_inst = dict(sorted(dict_pr_inst.items(), key = lambda item: len(item[1]), reverse = True))
-            dict_pr_inst = {k: [len(v), ' '.join(v)] for k, v in dict_pr_inst.items()}
-            st.table(pd.DataFrame(dict_pr_inst.values(), index = dict_pr_inst.keys(), columns = ['# of problems', 'Probematic variables']).head(25))
-            
-            # part of confronting trends
-            conf_trend_radio = st.radio("Do you want to compare trends?", ('Yes', 'No'), key = 'conf_trend_ratio')
-            if conf_trend_radio == 'Yes':
-                conf_trend_var = st.selectbox("Select Variable:", col_mul, key = 'conf_trend_var'); set_not_det = set()
-                set_inc_inc = set(); set_inc_ukn = set(); set_inc_dec = set()
-                set_ukn_inc = set(); set_ukn_ukn = set(); set_ukn_dec = set()
-                set_dec_inc = set(); set_dec_ukn = set(); set_dec_dec = set()
-                
-                for var in table[table['Prob inst ' + con_checks_features] == 1][con_checks_id_col].unique():
-                    inst = table[table[con_checks_id_col] == var][conf_trend_var].values[::-1]
-                    geo_mean_vec = np.delete(inst, np.where((inst == 0) | (np.isnan(inst))))
-
-                    # trend classification
-                    if geo_mean_vec.shape[0] > 3:
-                        mann_kend_res = mk.original_test(geo_mean_vec)
-                        trend, p, tau = mann_kend_res.trend, mann_kend_res.p, mann_kend_res.Tau
-                        if p <= p_value_trend_per/100 and tau >= 0:
-                            if table[table[con_checks_id_col] == var]['Class trend'].unique()[0] > 3:
-                                set_inc_inc.add(var)
-                            if table[table[con_checks_id_col] == var]['Class trend'].unique()[0] == 3:
-                                set_inc_ukn.add(var)
-                            if table[table[con_checks_id_col] == var]['Class trend'].unique()[0] < 3:
-                                set_inc_dec.add(var)
-                        if p <= p_value_trend_per/100 and tau < 0:
-                            if table[table[con_checks_id_col] == var]['Class trend'].unique()[0] > 3:
-                                set_dec_inc.add(var)
-                            if table[table[con_checks_id_col] == var]['Class trend'].unique()[0] == 3:
-                                set_dec_ukn.add(var)
-                            if table[table[con_checks_id_col] == var]['Class trend'].unique()[0] < 3:
-                                set_dec_dec.add(var)
-                        if p > p_value_trend_per/100:
-                            if table[table[con_checks_id_col] == var]['Class trend'].unique()[0] > 3:
-                                set_ukn_inc.add(var)
-                            if table[table[con_checks_id_col] == var]['Class trend'].unique()[0] == 3:
-                                set_ukn_ukn.add(var)
-                            if table[table[con_checks_id_col] == var]['Class trend'].unique()[0] < 3:
-                                set_ukn_dec.add(var)
-                    else:
-                        set_not_det.add(var)
-                    
-                table_conf_trend = [[len(set_inc_inc), len(set_inc_ukn), len(set_inc_dec)], 
-                                    [len(set_ukn_inc), len(set_ukn_ukn), len(set_ukn_dec)], 
-                                    [len(set_dec_inc), len(set_dec_ukn), len(set_dec_dec)]]
-                st.table(pd.DataFrame(table_conf_trend, 
-                                      index = ['(' + conf_trend_var + ') ' + 'Increasing', '(' + conf_trend_var + ') ' + 'Unknown', '(' + conf_trend_var + ') ' + 'Decreasing'], 
-                                      columns = ['(' + con_checks_features + ') ' + 'Increasing', '(' + con_checks_features + ') ' + 'Unknown', '(' + con_checks_features + ') ' + 'Decreasing']))
-                st.write('Institutions with missing data: ' + str(len(set_not_det)))
             
             st.write('To download the results select a time variable and then click the Download data button')
             left1, right1 = st.columns(2)
