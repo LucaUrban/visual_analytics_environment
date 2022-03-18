@@ -306,7 +306,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         multi_time = st.sidebar.selectbox("Multivariable time col", ['-'] + list(table.columns), 3)
         multiXax_col = st.sidebar.selectbox("Multivariable X axis col", col_mul, 1)
         multiYax_col = st.sidebar.selectbox("Multivariable Y axis col", col_mul, 2)
-        if (multi_time != '-' or table[multi_time].dtype != 'O') and table[multi_time].max() != table[multi_time].min():
+        if multi_time != '-' and table[multi_time].dtype != 'O' and table[multi_time].max() != table[multi_time].min():
             multiSlider = st.sidebar.slider("Multivarible time value", int(table[multi_time].min()), int(table[multi_time].max()), int(table[multi_time].min()))
             dff = table[table[multi_time] == multiSlider]
         else: 
