@@ -292,7 +292,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
         if len(res[ratio_vio_sel1][0]) == 4:
             for el in res[ratio_vio_sel1]:
-                if el in lis_id_eu_nut0:
+                if el in lis_id_eu_nut2:
                     map_box = px.choropleth_mapbox(res, geojson = eu_nut2, locations = res[ratio_vio_sel1], featureidkey = 'properties.id',
                                                color = new_ratio_name, color_continuous_scale = px.colors.cyclical.IceFire,
                                                range_color = (res[new_ratio_name].min(), res[new_ratio_name].max()),
@@ -304,7 +304,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
         if len(res[ratio_vio_sel1][0]) == 5:
             for el in res[ratio_vio_sel1]:
-                if el in lis_id_eu_nut0:
+                if el in lis_id_eu_nut3:
                     map_box = px.choropleth_mapbox(res, geojson = eu_nut3, locations = res[ratio_vio_sel1], featureidkey = 'properties.id',
                                                color = new_ratio_name, color_continuous_scale = px.colors.cyclical.IceFire,
                                                range_color = (res[new_ratio_name].min(), res[new_ratio_name].max()),
