@@ -319,7 +319,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
         st.plotly_chart(multi_plot, use_container_width=True)
 
-        if multi_time != '-' and table[multi_time].max() != table[multi_time].min():
+        if multi_time != '-' and table[multi_time].dtype != 'O' and table[multi_time].max() != table[multi_time].min():
             # time control charts
             el_id = st.selectbox("Id time control charts", table[multi_index].unique(), 1)
 
