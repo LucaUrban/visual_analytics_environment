@@ -261,7 +261,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                      'steps' : [
                          {'range': [table[new_ratio_name].min(), table[new_ratio_name].quantile(0.05)], 'color': "lightgray"},
                          {'range': [table[new_ratio_name].quantile(0.95), table[new_ratio_name].max()], 'color': "gray"}],},
-            title = {'text': "Gauge plot for the variable: R_1"}))
+            title = {'text': "Gauge plot for the variable: " + new_ratio_name}))
         
         st.plotly_chart(ratio_plot, use_container_width=True)
 
@@ -272,21 +272,49 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         with right:
             ratio_vio_sel2 = st.selectbox("Second category column", ['-'] + list(table.columns), 0)
         
-        res = {ratio_vio_sel1: table[ratio_vio_sel1].unique(), 'R_1': []}
+        res = {ratio_vio_sel1: table[ratio_vio_sel1].unique(), new_ratio_name: []}
         for nut_id in res[ratio_vio_sel1]:
-                  res['R_1'].append(table[table[ratio_vio_sel1] == nut_id]['R_1'].mean())
+                  res['R_1'].append(table[table[ratio_vio_sel1] == nut_id][new_ratio_name].mean())
         res = pd.DataFrame(res)
 
         px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
-        map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[ratio_vio_sel1], featureidkey = 'properties.ISO2',
-                                       color = 'R_1', color_continuous_scale = px.colors.cyclical.IceFire,
-                                       range_color = (table[new_ratio_name].min(), table[new_ratio_name].max()),
-                                       mapbox_style = "carto-positron",
-                                       zoom = 3, center = {"lat": 47.42, "lon": 15.53},
-                                       opacity = 0.5,
-                                       labels = {new_ratio_name: new_ratio_name})
+        if len(res[ratio_vio_sel1][0]) == 2:
+            for el in res[ratio_vio_sel1]:
+                if el in lis_id_eu_nut0:
+                    map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[ratio_vio_sel1], featureidkey = 'properties.ISO2',
+                                               color = new_ratio_name, color_continuous_scale = px.colors.cyclical.IceFire,
+                                               range_color = (res[new_ratio_name].min(), res[new_ratio_name].max()),
+                                               mapbox_style = "carto-positron",
+                                               zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
+                                               opacity = 0.5,
+                                               labels = {new_ratio_name: new_ratio_name})
+                    st.plotly_chart(map_box, use_container_width=True); break
+        
+        if len(res[ratio_vio_sel1][0]) == 4:
+            for el in res[ratio_vio_sel1]:
+                if el in lis_id_eu_nut0:
+                    map_box = px.choropleth_mapbox(res, geojson = eu_nut2, locations = res[ratio_vio_sel1], featureidkey = 'properties.id',
+                                               color = new_ratio_name, color_continuous_scale = px.colors.cyclical.IceFire,
+                                               range_color = (res[new_ratio_name].min(), res[new_ratio_name].max()),
+                                               mapbox_style = "carto-positron",
+                                               zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
+                                               opacity = 0.5,
+                                               labels = {new_ratio_name: new_ratio_name})
+                    st.plotly_chart(map_box, use_container_width=True); break
+        
+        if len(res[ratio_vio_sel1][0]) == 5:
+            for el in res[ratio_vio_sel1]:
+                if el in lis_id_eu_nut0:
+                    map_box = px.choropleth_mapbox(res, geojson = eu_nut3, locations = res[ratio_vio_sel1], featureidkey = 'properties.id',
+                                               color = new_ratio_name, color_continuous_scale = px.colors.cyclical.IceFire,
+                                               range_color = (res[new_ratio_name].min(), res[new_ratio_name].max()),
+                                               mapbox_style = "carto-positron",
+                                               zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
+                                               opacity = 0.5,
+                                               labels = {new_ratio_name: new_ratio_name})
+                    st.plotly_chart(map_box, use_container_width=True); break
 
-        st.plotly_chart(map_box, use_container_width=True)
+        
         
         uniques = list(table[ratio_vio_sel1].unique())
         cou_sel = st.selectbox("Id to explore", ['All ids'] + uniques, 0)
