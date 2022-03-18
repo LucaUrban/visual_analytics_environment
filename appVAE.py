@@ -55,21 +55,21 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
     lis_id_eu_nut0 = []
     for el in eu_nut0['features']:
-        lis_id_eu_nut0.append(el['properties']['ISO2']))
+        lis_id_eu_nut0.append(el['properties']['ISO2'])
     
     with urlopen('https://raw.githubusercontent.com/eurostat/Nuts2json/master/2021/4326/60M/nutsrg_2.json') as response:
         eu_nut2 = json.load(response)
 
     lis_id_eu_nut2 = []
     for el in eu_nut2['features']:
-        lis_id_eu_nut2.append(el['properties']['id']))
+        lis_id_eu_nut2.append(el['properties']['id'])
         
     with urlopen('https://raw.githubusercontent.com/eurostat/Nuts2json/master/2021/4326/60M/nutsrg_3.json') as response:
         eu_nut3 = json.load(response)
     
     lis_id_eu_nut3 = []
     for el in eu_nut3['features']:
-        lis_id_eu_nut3.append(el['properties']['id']))
+        lis_id_eu_nut3.append(el['properties']['id'])
 
     # selection boxes columns
     col_an = [col for col in list(table) if len(table[col].unique()) < 10 or is_numeric_dtype(table[col])]
