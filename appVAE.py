@@ -985,7 +985,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 with right1:
                     notes_col = st.selectbox("Notes variable", ['-'] + list(table.columns))
                 
-            res_ind = dict(); table['Class trend'] = 0; table['Rupt. Years'] = ''
+            res_ind = dict(); table['Class trend'] = 0; table['Rupt. years'] = ''
             for id_inst in table[con_checks_id_col].unique():
                 # calculations of the geometric mean
                 inst = table[table[con_checks_id_col] == id_inst][con_checks_features].values[::-1]
@@ -1196,9 +1196,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
             if flag_radio == 'Yes':
-                df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Existing flag', 'Detected case']
+                df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Existing flag', 'Detected case', 'Rupt. years']
             else:
-                df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Detected case']
+                df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Detected case', 'Rupt. years']
             for inst in sorted(list(table[con_checks_id_col].unique())):
                 df_inst = table[table[con_checks_id_col] == inst]
                 list_el = [inst]
@@ -1228,10 +1228,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                         else:
                             list_el.append(1)
                 list_el.append(df_inst['Prob inst ' + con_checks_features].unique()[0])
+                list_el.append(df_inst['Rupt. years'].unique()[0])
                 list_fin.append(list_el)
-            for i in range(len(list_fin)):
-                if len(df_cols) != len(list_fin[i]):
-                    st.write(list_fin[i])
             table_download = pd.DataFrame(list_fin, columns = df_cols)
             st.download_button(label = "Download data with lables", data = table_download.to_csv(index = None, sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
            
