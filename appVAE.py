@@ -1186,7 +1186,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_features, 'Reference year']], x = 'Reference year', y = con_checks_features)
             line_trend_ch_inst.update_yaxes(range = [0, max(table[table[con_checks_id_col] == trend_inst][con_checks_features].values) + (.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_features].values))])
             st.plotly_chart(line_trend_ch_inst, use_container_width=True)
-            
+            st.write(table)
             st.write('To download the results select a time variable and then click the Download data button')
             left1, right1 = st.columns(2)
             with left1:
