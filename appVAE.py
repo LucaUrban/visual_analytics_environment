@@ -975,6 +975,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             flag_issue_quantile = st.sidebar.number_input("Flags quantile (S2 and S3)", 35.0, 100.0, 95.0, 0.1)
             prob_cases_per = st.sidebar.number_input("Percentage problematic cases", 0.0, 100.0, 20.0)
             p_value_trend_per = st.sidebar.number_input("P-value percentage trend estimation", 5.0, 50.0, 10.0)
+            rupt_y_per = st.sidebar.number_input("Rupture years threshold", 5.0, 50.0, 25.0)
 
             con_checks_features = st.selectbox("Variable consistency checks:", col_mul)
             flag_radio = st.radio("Do you want to use the flags:", ('Yes', 'No'))
@@ -1019,13 +1020,13 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 for i in range(len(geo_mean_vec)):
                     reg_val = intercept + (i * coeff[0])
                     if reg_val >= geo_mean_vec[i]:
-                        if (reg_val - geo_mean_vec[i]) / reg_val >= 0.25:
+                        if (reg_val - geo_mean_vec[i]) / reg_val >= rupt_y_per/100:
                             if rupt_y != '':
                                 rupt_y += '-' + str(not_na_years[i])
                             else:
                                 rupt_y = str(not_na_years[i])
                     else:
-                        if (geo_mean_vec[i] - reg_val) / geo_mean_vec[i] >= 0.25:
+                        if (geo_mean_vec[i] - reg_val) / geo_mean_vec[i] >= rupt_y_per/100:
                             if rupt_y != '':
                                 rupt_y += '-' + str(not_na_years[i])
                             else:
