@@ -1030,7 +1030,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                 rupt_y += '-' + str(not_na_years[i])
                             else:
                                 rupt_y = str(not_na_years[i])
-                table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt. Years'] = rupt_y
+                table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt. years'] = rupt_y
             
             indices = pd.DataFrame(res_ind.values(), index = res_ind.keys(), columns = [con_checks_features])
             indices.drop(index = set(indices[(pd.isna(indices[con_checks_features])) | (indices[con_checks_features] <= indices.quantile(retain_quantile/100).values[0])].index), axis = 0, inplace = True)
@@ -1228,7 +1228,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                         else:
                             list_el.append(1)
                 list_el.append(df_inst['Prob inst ' + con_checks_features].unique()[0])
-                st.write(df_inst)
                 list_el.append(df_inst['Rupt. years'].unique()[0])
                 list_fin.append(list_el)
             table_download = pd.DataFrame(list_fin, columns = df_cols)
