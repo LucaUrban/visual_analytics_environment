@@ -1228,7 +1228,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                         else:
                             list_el.append(1)
                 list_el.append(df_inst['Prob inst ' + con_checks_features].unique()[0])
-                st.write(df_inst['Rupt. years'])
+                st.write(df_inst)
                 list_el.append(df_inst['Rupt. years'].unique()[0])
                 list_fin.append(list_el)
             table_download = pd.DataFrame(list_fin, columns = df_cols)
