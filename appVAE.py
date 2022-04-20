@@ -33,13 +33,13 @@ demo_data_radio = st.radio("What is the dataset you want to import:", ('Demo dat
 if demo_data_radio == 'Demo datset' or uploaded_file is not None:
     if uploaded_file is not None:
         if demo_data_radio == 'ETER Dataset':
-            table = pd.read_csv(uploaded_file, delimiter = ';', decimal = ',')
+            table = pd.read_csv(uploaded_file, delimiter = ';', decimal = ',', low_memory = False)
             
             for col in table.columns:
                 if table[col].dtypes == 'O' and not (col.startswith('Flag') or col.startswith('Notes')):
                     table[col] = table[col].apply(lambda x: x.replace(',', '.') if not pd.isna(x) else x)
             
-            for token in ['a', 'c', 'm',  'nc','s', 'x', 'xc', 'xr']:
+            for token in ['a', 'c', 'm',  'nc', 's', 'x', 'xc', 'xr']:
                 table.replace({token: np.nan}, inplace = True)
             
             for col in table.columns:
