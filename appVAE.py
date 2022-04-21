@@ -47,7 +47,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         else:
             table = pd.read_csv(uploaded_file)
     else:
-        table = pd.read_csv('https://raw.githubusercontent.com/LucaUrban/visual_analytics_environment/main/eter dataset demo.csv')
+        table = pd.read_csv('https://raw.githubusercontent.com/LucaUrban/visual_analytics_environment/main/eter%20dataset%20demo.csv')
 
     # importing all other necessary files
     with urlopen('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson') as response:
