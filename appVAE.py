@@ -1011,27 +1011,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                             table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 2
                         if p > p_value_trend_per/100:
                             table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
-                '''
-                # issue flags about ruptures in the series
-                x = [[i, 0] for i in range(len(geo_mean_vec))]; rupt_y = ''
-                reg = Ridge().fit(x, geo_mean_vec); coeff = reg.coef_; intercept = reg.intercept_
-                not_na_years = list(table[(-pd.isna(table[con_checks_features])) & (table[con_checks_id_col] == id_inst)]['Reference year'].values)
-
-                for i in range(len(geo_mean_vec)):
-                    reg_val = intercept + (i * coeff[0])
-                    if reg_val >= geo_mean_vec[i]:
-                        if (reg_val - geo_mean_vec[i]) / reg_val >= rupt_y_per/100:
-                            if rupt_y != '':
-                                rupt_y += '-' + str(not_na_years[i])
-                            else:
-                                rupt_y = str(not_na_years[i])
-                    else:
-                        if (geo_mean_vec[i] - reg_val) / geo_mean_vec[i] >= rupt_y_per/100:
-                            if rupt_y != '':
-                                rupt_y += '-' + str(not_na_years[i])
-                            else:
-                                rupt_y = str(not_na_years[i])
-                table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt. years'] = rupt_y'''
             
             indices = pd.DataFrame(res_ind.values(), index = res_ind.keys(), columns = [con_checks_features])
             indices.drop(index = set(indices[(pd.isna(indices[con_checks_features])) | (indices[con_checks_features] <= indices.quantile(retain_quantile/100).values[0])].index), axis = 0, inplace = True)
