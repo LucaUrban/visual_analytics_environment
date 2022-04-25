@@ -248,7 +248,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         new_ratio_name = st.text_input('Name of the new ratio', 'R_1')
         
         for col in ratio_den:
-            table[col].replace({0: np.nan})
+            table.loc[table[table[col] == 0].index, col] = np.nan
             
         if len(ratio_num) == 1 and len(ratio_den) == 1:
             table = pd.concat([table, pd.DataFrame(np.divide(table[ratio_num].values, table[ratio_den].values), columns = [new_ratio_name])], axis = 1)
