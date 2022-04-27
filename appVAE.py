@@ -1117,6 +1117,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                         ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (pd.isna(table[notes_col]))][con_checks_id_col].values).union(set(table[table[flags_col] == 'p'][con_checks_id_col].values))
                         twos = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (-pd.isna(table[notes_col]))][con_checks_id_col].values)
                         ones = ones - (ones & twos)
+                        st.write(twos)
                 else:
                     ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
                 if flag_notes_on:
