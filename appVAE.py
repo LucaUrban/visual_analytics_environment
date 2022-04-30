@@ -469,7 +469,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             st.write("None")
     
     if widget == "Feature Importance Analysis":
-        st.set_page_config(layout = "wide")
         # pareto chart with feature importance on ridge regressor
         st.sidebar.subheader("Feature Importance Area")
         feaImp_target = st.sidebar.selectbox("Feature Importance target", col_mul, 1)
