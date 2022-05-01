@@ -581,8 +581,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         ch_distr = st.selectbox("Distribution anomalies estimation", ['Normal', 'Exponential', 'Log-Norm', 'Weibull'])
         fig_distr = go.Figure(data = [go.Histogram(x = var_clean, 
                                                    xbins = dict(start = var_clean.min(), end = var_clean.max(), size = (var_clean.max() - var_clean.min()) / 25),
-                                                   histnorm = 'probability density',
-                                                   autobinx = False)])
+                                                   autobinx = False, 
+                                                   histnorm = 'probability density')])
         
         x_pos = np.linspace(var_clean.min(), var_clean.max(), 25)
         if ch_distr == 'Normal':
