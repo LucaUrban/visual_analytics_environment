@@ -1,0 +1,1218 @@
+import streamlit as st
+import time
+import base64
+import os
+from urllib.parse import quote as urlquote
+from urllib.request import urlopen
+import pandas as pd
+import numpy as np
+from pandas.api.types import is_numeric_dtype
+import json
+import random
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+from plotly.colors import n_colors
+from sklearn.linear_model import Ridge, LinearRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error
+from statsmodels.tsa.ar_model import AutoReg
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.stats.stattools import medcouple
+import math
+import scipy.stats as stats
+import pymannkendall as mk
+import csv
+
+st.title("Visual Information Quality Environment")
+st.write("In this part you can upload your csv file either dropping your file or browsing it. Then the application will start showing all of the charts for the Dataset. " +
+         "To change the file to be analyzed you have to refresh the page.")
+uploaded_file = st.file_uploader("Choose a file")
+demo_data_radio = st.radio("What is the dataset you want to import:", ('Demo datset', 'ETER Dataset', 'Another dataset'))
+
+if demo_data_radio == 'Demo datset' or uploaded_file is not None:
+    if uploaded_file is not None:
+        if demo_data_radio == 'ETER Dataset':
+            table = pd.read_csv(uploaded_file, delimiter = ';', decimal = ',', low_memory = False)
+            
+            for col in table.columns:
+                if table[col].dtypes == 'O' and not (col.startswith('Flag') or col.startswith('Notes')):
+                    table[col] = table[col].apply(lambda x: x.replace(',', '.') if not pd.isna(x) else x)
+            
+            for token in ['a', 'c', 'm',  'nc', 's', 'x', 'xc', 'xr']:
+                table.replace({token: np.nan}, inplace = True)
+            
+            for col in table.columns:
+                table[col] = pd.to_numeric(table[col], errors = 'ignore')
+        else:
+            table = pd.read_csv(uploaded_file)
+    else:
+        table = pd.read_csv('https://raw.githubusercontent.com/LucaUrban/visual_analytics_environment/main/eter%20dataset%20demo.csv')
+
+    # importing all other necessary files
+    with urlopen('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson') as response:
+        eu_nut0 = json.load(response)
+        
+    lis_id_eu_nut0 = []
+    for el in eu_nut0['features']:
+        lis_id_eu_nut0.append(el['properties']['ISO2'])
+    
+    with urlopen('https://raw.githubusercontent.com/eurostat/Nuts2json/master/2021/4326/60M/nutsrg_2.json') as response:
+        eu_nut2 = json.load(response)
+
+    lis_id_eu_nut2 = []
+    for el in eu_nut2['features']:
+        lis_id_eu_nut2.append(el['properties']['id'])
+        
+    with urlopen('https://raw.githubusercontent.com/eurostat/Nuts2json/master/2021/4326/60M/nutsrg_3.json') as response:
+        eu_nut3 = json.load(response)
+    
+    lis_id_eu_nut3 = []
+    for el in eu_nut3['features']:
+        lis_id_eu_nut3.append(el['properties']['id'])
+
+    # selection boxes columns
+    col_an = [col for col in list(table) if len(table[col].unique()) < 10 or is_numeric_dtype(table[col])]
+    col_mul = [col for col in list(table) if is_numeric_dtype(table[col])]
+    lis_check = [{'label': col, 'value': col} for col in col_mul if col != col_mul[0]]
+
+    widget = st.selectbox("what is the widget you want to display:",
+                          ["Data View", "Correlation Analysis", "Geographical Analysis", "Mono dimensional Analysis", "Ratios Analysis", "Multi-dimensional Analysis", 
+                           "Autocorrelation Analysis", "Feature Importance Analysis", "Anomalies check", "Consistency checks", "Time series forecasting"], 0)
+    
+    if widget == "Data View":
+        # showing the table with the data
+        st.header("Data View")
+        st.write("Data contained into the dataset:", table)
+    
+    if widget == "Geographical Analysis":
+        # map-box part
+        st.sidebar.subheader("Map area")
+        nut_col = st.sidebar.selectbox("Nut column", table.columns, 0)
+        map_feature = st.sidebar.selectbox("Feature column", col_mul, 0)
+        map_q = st.sidebar.number_input("Quantile value", 0, 100, 50)
+
+        st.header("Geographical Analysis")
+
+        res = {nut_col: table[nut_col].unique(), map_feature: []}
+        for nut_id in res[nut_col]:
+            res[map_feature].append(table[table[nut_col] == nut_id][map_feature].quantile(map_q/100))
+        res = pd.DataFrame(res)
+
+        px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
+        if len(res[nut_col][0]) == 2:
+            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[nut_col], featureidkey = 'properties.ISO2',
+                                       color = map_feature, color_continuous_scale = px.colors.cyclical.IceFire,
+                                       range_color = (res[map_feature].min(), res[map_feature].max()),
+                                       mapbox_style = "carto-positron",
+                                       zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
+                                       opacity = 0.5,
+                                       labels = {map_feature: map_feature})
+        
+        if len(res[nut_col][0]) == 4:
+            map_box = px.choropleth_mapbox(res, geojson = eu_nut2, locations = res[nut_col], featureidkey = 'properties.id',
+                                       color = map_feature, color_continuous_scale = px.colors.cyclical.IceFire,
+                                       range_color = (res[map_feature].min(), res[map_feature].max()),
+                                       mapbox_style = "carto-positron",
+                                       zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
+                                       opacity = 0.5,
+                                       labels = {map_feature: map_feature})
+        
+        if len(res[nut_col][0]) == 5:
+            map_box = px.choropleth_mapbox(res, geojson = eu_nut3, locations = res[nut_col], featureidkey = 'properties.id',
+                                       color = map_feature, color_continuous_scale = px.colors.cyclical.IceFire,
+                                       range_color = (res[map_feature].min(), res[map_feature].max()),
+                                       mapbox_style = "carto-positron",
+                                       zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
+                                       opacity = 0.5,
+                                       labels = {map_feature: map_feature})
+
+        st.plotly_chart(map_box, use_container_width=True)
+    
+    if widget == "Mono dimensional Analysis":
+        # mono variable analysis part
+        st.header("Monodimension Analysis")
+
+        st.sidebar.subheader("Monovariable Area")
+        monoVar_col = st.sidebar.selectbox("Monovariable feature", col_an, 6)
+        monoVar_type = st.sidebar.selectbox("Chart type", ["gauge plot", "pie chart"], 0)
+
+        if monoVar_type == "gauge plot":
+            monoVar_plot = go.Figure(go.Indicator(
+                mode = "gauge+number+delta",
+                value = table[monoVar_col].mean(),
+                delta = {"reference": 2 * table[monoVar_col].mean() - table[monoVar_col].quantile(0.95)},
+                domain = {'x': [0, 1], 'y': [0, 1]},
+                gauge = {'axis': {'range': [table[monoVar_col].min(), table[monoVar_col].max()]},
+                         'steps' : [
+                             {'range': [table[monoVar_col].min(), table[monoVar_col].quantile(0.05)], 'color': "lightgray"},
+                             {'range': [table[monoVar_col].quantile(0.95), table[monoVar_col].max()], 'color': "gray"}]},
+                title = {'text': "Gauge plot for the variable: " + monoVar_col}))
+        else:
+            monoVar_plot = px.pie(table, names = monoVar_col, title = "Pie chart for the variable: " + monoVar_col)
+
+        st.plotly_chart(monoVar_plot, use_container_width=True)
+        
+    if widget == "Correlation Analysis":
+        heat_cols = st.multiselect("Columns correlation heatmap:", col_mul)
+        
+        if len(heat_cols) >= 2:
+            fig_heat = px.imshow(table[heat_cols].corr(), x = heat_cols,  y = heat_cols, 
+                                 labels = dict(color = "Corr Value"), color_continuous_scale = px.colors.sequential.Hot)
+            st.plotly_chart(fig_heat, use_container_width=True)
+        else:
+            st.warning("Yuo have to choose at least two columns")
+            
+    if widget == "Time series forecasting":
+        st.header("Time series forecasting")
+
+        use_col = st.sidebar.selectbox("Chosen Variable", col_mul, 0)
+        modality = st.sidebar.selectbox("Forecasting Method", ["Rolling Forecast", "Recurring Forecast"], 0)
+        index = st.sidebar.selectbox("Index col", table.columns, 0)
+        time = st.sidebar.selectbox("Time col", table.columns, 0)
+ 
+        # pre-work
+        data = table[[index, time, use_col]].sort_values(by=[time])
+        res = np.array([]); ids = []
+        for id in data[index].unique():
+            el = data[data[index] == id][use_col]
+            n = len(list(data[time].unique()))
+            if el.shape[0] == n:
+                res = np.concatenate([res, el.values])
+                ids.append(id)
+        res = res.reshape(res.shape[0]//n, n)
+        col_mean = np.nanmean(res, axis = 1)
+
+        #Find indices that you need to replace
+        inds = np.where(np.isnan(res))
+
+        #Place column means in the indices. Align the arrays using take
+        res[inds] = np.take(col_mean, inds[1])
+        
+        # fit the init model and making the predictions
+        pred_ar = np.array([]); pred_ma = np.array([]); pred_arma = np.array([]); pred_arima = np.array([])
+
+        for i in range(res.shape[0]):
+            pred_ar = np.append(pred_ar, AutoReg(res[i, 0:res.shape[1]-1], lags = 1).fit().predict(len(res), len(res)))
+            pred_ma = np.append(pred_ma, ARIMA(res[i, 0:res.shape[1]-1], order=(0, 0, 1)).fit().predict(len(res), len(res)))
+            pred_arma = np.append(pred_arma, ARIMA(res[i, 0:res.shape[1]-1], order=(2, 0, 1)).fit().predict(len(res), len(res)))
+            pred_arima = np.append(pred_arima, ARIMA(res[i, 0:res.shape[1]-1], order=(1, 1, 1)).fit().predict(len(res), len(res), typ='levels'))
+        
+        
+        # visual part
+        mse_mins = np.array([mean_squared_error(pred_ar, res[:, res.shape[1]-1]), mean_squared_error(pred_ma, res[:, res.shape[1]-1]),
+                             mean_squared_error(pred_arma, res[:, res.shape[1]-1]), mean_squared_error(pred_arima, res[:, res.shape[1]-1])])
+        st.table(pd.DataFrame(mse_mins.reshape((1, 4)), columns = ['AR', 'MA', 'ARMA', 'ARIMA'], index = ['MSE error']))
+         
+        ch_model = st.selectbox("Model to apply", ['AR', 'MA', 'ARMA', 'ARIMA'])
+        ch_id = st.selectbox("Id to forecast", ids)
+        num_fut_pred = st.sidebar.number_input("Number of periods to forecast", 1, 10, 1)
+        fig_forecasting = go.Figure()
+        
+        # forecasting
+        par_for = []; rif = res[ids.index(ch_id)]
+        for i in range(num_fut_pred + 1):
+            # prediction based on the chosen model
+            if ch_model == 'AR':
+                pred = AutoReg(rif, lags = 1).fit().predict(len(rif), len(rif))[0]
+
+            if ch_model == 'MA':
+                pred = ARIMA(rif, order=(0, 0, 1)).fit().predict(len(rif), len(rif))[0]
+
+            if ch_model == 'ARMA':
+                pred = ARIMA(rif, order=(2, 0, 1)).fit().predict(len(rif), len(rif))[0]
+
+            if ch_model == 'ARIMA':
+                pred = ARIMA(rif, order=(1, 1, 1)).fit().predict(len(rif), len(rif))[0]
+                
+            par_for.append(pred); rif = np.append(rif, pred)
+            # rolling forecasting
+            if modality == "Rolling Forecast":
+                rif = rif[1:]
+        
+        fig_forecasting.add_trace(go.Scatter(x = [max(list(data[time].unique())) + j for j in range(num_fut_pred + 1)], 
+                                             y = [res[ids.index(ch_id), -1]] + par_for, mode = 'lines+markers', name = "Prediction", line = dict(color = 'firebrick')))
+        fig_forecasting.add_trace(go.Scatter(x = list(data[time].unique()), y = data[data[index] == ch_id][use_col].values, mode = 'lines+markers', name = "Value", 
+                                             line = dict(color = 'royalblue')))
+        fig_forecasting.update_layout(xaxis_title = use_col, yaxis_title = time, title_text = "Values over time with future predictions")
+        st.plotly_chart(fig_forecasting, use_container_width=True)
+    
+    if widget == "Ratios Analysis":
+        # ratio analysis part
+        st.header("Ratios Analysis")
+
+        st.sidebar.subheader("Ratio Area")
+        ratio_num = st.sidebar.multiselect("Variables ratio numerator", col_mul)
+        ratio_den = st.sidebar.multiselect("Variables ratio denominator", col_mul)
+        
+        new_ratio_name = st.text_input('Name of the new ratio', 'R_1')
+        
+        for col in ratio_den:
+            table.loc[table[table[col] == 0].index, col] = np.nan
+            
+        if len(ratio_num) == 1 and len(ratio_den) == 1:
+            table = pd.concat([table, pd.DataFrame(np.divide(table[ratio_num].values, table[ratio_den].values), columns = [new_ratio_name])], axis = 1)
+        else:
+            table = pd.concat([table, pd.DataFrame(np.divide(np.nansum(table[ratio_num].values, axis = 1), np.nansum(table[ratio_den].values, axis = 1)), columns = [new_ratio_name])], axis = 1)
+        
+        ratio_plot = go.Figure(go.Indicator(
+            mode = "gauge+number+delta",
+            value = table[new_ratio_name].mean(),
+            delta = {"reference": 2 * table[new_ratio_name].mean() - table[new_ratio_name].quantile(0.95)},
+            domain = {'x': [0, 1], 'y': [0, 1]},
+            gauge = {'axis': {'range': [table[new_ratio_name].min(), table[new_ratio_name].max()]},
+                     'steps' : [
+                         {'range': [table[new_ratio_name].min(), table[new_ratio_name].quantile(0.05)], 'color': "lightgray"},
+                         {'range': [table[new_ratio_name].quantile(0.95), table[new_ratio_name].max()], 'color': "gray"}],},
+            title = {'text': "Gauge plot for the variable: " + new_ratio_name}))
+        
+        st.plotly_chart(ratio_plot, use_container_width=True)
+
+        # map pplot + violin plot on the aggregated results
+        left, right = st.columns(2)
+        with left: 
+            ratio_vio_sel1 = st.selectbox("First category col (or nut id col)", table.columns, 0)
+        with right:
+            ratio_vio_sel2 = st.selectbox("Second category column", ['-'] + list(table.columns), 0)
+        
+        res = {ratio_vio_sel1: table[ratio_vio_sel1].unique(), new_ratio_name: []}
+        for nut_id in res[ratio_vio_sel1]:
+                  res['R_1'].append(table[table[ratio_vio_sel1] == nut_id][new_ratio_name].mean())
+        res = pd.DataFrame(res)
+
+        px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
+        if len(res[ratio_vio_sel1][0]) == 2:
+            for el in res[ratio_vio_sel1]:
+                if el in lis_id_eu_nut0:
+                    map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[ratio_vio_sel1], featureidkey = 'properties.ISO2',
+                                               color = new_ratio_name, color_continuous_scale = px.colors.cyclical.IceFire,
+                                               range_color = (res[new_ratio_name].min(), res[new_ratio_name].max()),
+                                               mapbox_style = "carto-positron",
+                                               zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
+                                               opacity = 0.5,
+                                               labels = {new_ratio_name: new_ratio_name})
+                    st.plotly_chart(map_box, use_container_width=True); break
+        
+        if len(res[ratio_vio_sel1][0]) == 4:
+            for el in res[ratio_vio_sel1]:
+                if el in lis_id_eu_nut2:
+                    map_box = px.choropleth_mapbox(res, geojson = eu_nut2, locations = res[ratio_vio_sel1], featureidkey = 'properties.id',
+                                               color = new_ratio_name, color_continuous_scale = px.colors.cyclical.IceFire,
+                                               range_color = (res[new_ratio_name].min(), res[new_ratio_name].max()),
+                                               mapbox_style = "carto-positron",
+                                               zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
+                                               opacity = 0.5,
+                                               labels = {new_ratio_name: new_ratio_name})
+                    st.plotly_chart(map_box, use_container_width=True); break
+        
+        if len(res[ratio_vio_sel1][0]) == 5:
+            for el in res[ratio_vio_sel1]:
+                if el in lis_id_eu_nut3:
+                    map_box = px.choropleth_mapbox(res, geojson = eu_nut3, locations = res[ratio_vio_sel1], featureidkey = 'properties.id',
+                                               color = new_ratio_name, color_continuous_scale = px.colors.cyclical.IceFire,
+                                               range_color = (res[new_ratio_name].min(), res[new_ratio_name].max()),
+                                               mapbox_style = "carto-positron",
+                                               zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
+                                               opacity = 0.5,
+                                               labels = {new_ratio_name: new_ratio_name})
+                    st.plotly_chart(map_box, use_container_width=True); break
+
+        
+        
+        uniques = list(table[ratio_vio_sel1].unique())
+        cou_sel = st.selectbox("Id to explore", ['All ids'] + uniques, 0)
+        if cou_sel == 'All ids':
+            if ratio_vio_sel2 == '-':
+                fig_vio = px.violin(table, y = new_ratio_name, box = True, points = 'suspectedoutliers', title = 'Violin plot for the created ratio')
+            else:
+                fig_vio = px.violin(table, y = new_ratio_name, color = table[ratio_vio_sel2], box = True, points = 'suspectedoutliers', 
+                                    title = 'Violin plot for the created ratio')
+        else:
+            if ratio_vio_sel2 == '-':
+                fig_vio = px.violin(table[table[ratio_vio_sel1] == cou_sel], y = new_ratio_name, x = ratio_vio_sel1, box = True, points = 'suspectedoutliers', 
+                                    title = 'Violin plot for the created ratio')
+            else:
+                fig_vio = px.violin(table[table[ratio_vio_sel1] == cou_sel], y = new_ratio_name, x = ratio_vio_sel1, color = table[table['Sel'] == cou_sel][ratio_vio_sel2], 
+                                    box = True, points = 'suspectedoutliers', title = 'Violin plot for the created ratio')
+        st.plotly_chart(fig_vio, use_container_width=True)
+
+        st.write('If you want to download the result file with the new ratio clik on the following button:')
+        st.download_button(label = "Download data with lables", data = table.to_csv(index = None, sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
+    
+    if widget == "Multi-dimensional Analysis":
+        # multi variable analysis part
+        st.header("Multi-dimension Analysis")
+
+        st.sidebar.subheader("Multivariable Area")
+        multi_index = st.sidebar.selectbox("Multivariable index col", table.columns, 1)
+        multi_time = st.sidebar.selectbox("Multivariable time col", ['-'] + list(table.columns), 3)
+        multiXax_col = st.sidebar.selectbox("Multivariable X axis col", col_mul, 1)
+        multiYax_col = st.sidebar.selectbox("Multivariable Y axis col", col_mul, 2)
+        if multi_time != '-' and table[multi_time].dtype != 'O' and table[multi_time].max() != table[multi_time].min():
+            multiSlider = st.sidebar.slider("Multivarible time value", int(table[multi_time].min()), int(table[multi_time].max()), int(table[multi_time].min()))
+            dff = table[table[multi_time] == multiSlider]
+        else: 
+            dff = table
+            
+        multi_plot = px.scatter(x = dff[multiXax_col], y = dff[multiYax_col], hover_name = dff[multi_index])
+        multi_plot.update_traces(customdata = dff[multi_index])
+        multi_plot.update_xaxes(title = multiXax_col)
+        multi_plot.update_yaxes(title = multiYax_col)
+
+        st.plotly_chart(multi_plot, use_container_width=True)
+
+        if multi_time != '-' and table[multi_time].dtype != 'O' and table[multi_time].max() != table[multi_time].min():
+            # time control charts
+            el_id = st.selectbox("Id time control charts", table[multi_index].unique(), 1)
+
+            dff_tcc = table[table[multi_index] == el_id][[multi_time, multiXax_col, multiYax_col]]
+            if len(list(dff_tcc[multi_time].unique())) < dff_tcc.shape[0]:
+                res = {multi_time: [], multiXax_col: [], multiYax_col: []}
+                for el in list(dff_tcc[multi_time].unique()):
+                    res[multi_time].append(el)
+                    res[multiXax_col].append(dff_tcc[dff_tcc[multi_time] == el][multiXax_col].mean())
+                    res[multiYax_col].append(dff_tcc[dff_tcc[multi_time] == el][multiYax_col].mean())
+                dff_tcc = pd.DataFrame(data = res)
+            titles = ['<b>{}</b><br>{}'.format(el_id, multiXax_col), '<b>{}</b><br>{}'.format(el_id, multiYax_col)]
+
+            for i in range(2):
+                fig_tcc = go.Figure()
+                if dff_tcc.shape[0] != 0:
+                    x_bar = []
+                    for inst in table[multi_index].unique():
+                        inst_data = table[table[multi_index] == inst][list(dff_tcc)[i+1]]
+                        if inst_data.count() != 0:
+                            x_bar.append(inst_data.mean())
+
+                    x_barbar = round(sum(x_bar)/len(x_bar), 3)
+
+                    x_LCL = x_barbar - (1.88 * (dff_tcc[list(dff_tcc)[i+1]].quantile(0.95) - dff_tcc[list(dff_tcc)[i+1]].quantile(0.05)))
+                    x_UCL = x_barbar + (1.88 * (dff_tcc[list(dff_tcc)[i+1]].quantile(0.95) - dff_tcc[list(dff_tcc)[i+1]].quantile(0.05)))
+
+                    x_el = [i for i in range(int(dff_tcc[multi_time].min()), int(dff_tcc[multi_time].max()) + 1)]
+                    fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = dff_tcc[list(dff_tcc)[i+1]], mode = 'lines+markers', name = "Value"))
+                    fig_tcc.add_trace(go.Scatter(x = x_el, y = [x_UCL for _ in range(len(x_el))], mode = "lines", name = "Upper Bound"))
+                    fig_tcc.add_trace(go.Scatter(x = x_el, y = [x_LCL for _ in range(len(x_el))], mode = "lines", name = "Lower Bound"))
+
+                    fig_tcc.update_xaxes(showgrid = False)
+                    fig_tcc.add_annotation(x=0, y=0.85, xanchor='left', yanchor='bottom',
+                                           xref = 'paper', yref = 'paper', showarrow=False, align = 'left',
+                                           bgcolor = 'rgba(255, 255, 255, 0.5)', text = titles[i])
+                    fig_tcc.update_layout(xaxis_title = multi_time, yaxis_title = list(dff_tcc)[i+1])
+                    fig_tcc.update_layout(height = 250, margin = {'l': 20, 'b': 30, 'r': 10, 't': 10})
+
+                    st.plotly_chart(fig_tcc, use_container_width=True)
+    
+    if widget == "Autocorrelation Analysis":
+        # crossfilter analysis part
+        st.header("Autocorrelation Analysis")
+
+        st.sidebar.subheader("Autocorrelation Area")
+        cross_index = st.sidebar.selectbox("Autocorrelation index col", table.columns, 1)
+        cross_time = st.sidebar.selectbox("Autocorrelation time col", table.columns, 3)
+        cross_col = st.sidebar.selectbox("Autocorrelation X axis col", col_mul, 1)
+        crossSlider = st.sidebar.slider("Autocorrelation time value", int(table[cross_time].min()), int(table[cross_time].max()-1), int(table[cross_time].min()))
+
+        dff_cross_dw = table[table[cross_time] == crossSlider][[cross_index, cross_col]]
+        dff_cross_up = table[table[cross_time] == crossSlider + 1][[cross_index, cross_col]]
+        final_df_cross = pd.merge(dff_cross_dw, dff_cross_up, how = "inner", on = cross_index)
+
+        cross_plot = px.scatter(x = final_df_cross[cross_col + "_x"], y = final_df_cross[cross_col + "_y"], hover_name = final_df_cross[cross_index])
+
+        cross_plot.update_xaxes(title = cross_col)
+        cross_plot.update_yaxes(title = cross_col + " Next Year")
+
+        st.plotly_chart(cross_plot, use_container_width=True)
+
+        st.subheader("Autocorrelation")
+        st.write("Autocorrelation value: " + str(round(final_df_cross[cross_col + "_x"].corr(final_df_cross[cross_col + "_y"]), 5)))
+
+        # difference timeseries plot
+        el_id_diff = st.selectbox("Id deltas timeseries", table[cross_index].unique())
+
+        dff_diff = table[table[cross_index] == el_id_diff]
+        if len(list(dff_diff[cross_time].unique())) < dff_diff.shape[0]:
+            res = {cross_time: [], cross_col: []}
+            for el in list(dff[cross_time].unique()):
+                res[cross_time].append(el); res[cross_col].append(dff_diff[dff_diff[cross_time] == el][cross_col].mean())
+            dff_diff = pd.DataFrame(data = res)
+        title = '<b>{}</b><br>{}'.format(el_id_diff, cross_col)
+
+        fig_diff = go.Figure(); flag = 0
+        if dff_diff.shape[0] > 1:
+            x = [[i, 0] for i in range(1, dff_diff.shape[0])]
+            Y = [dff_diff[cross_col].iloc[dff_diff.shape[0] - i - 1] - dff_diff[cross_col].iloc[dff_diff.shape[0] - i] for i in range(1, dff_diff.shape[0])]
+            reg = LinearRegression().fit(x, Y); coeff = reg.coef_; intercept = reg.intercept_
+
+            fig_diff.add_trace(go.Scatter(x = [str(dff_diff[cross_time].iloc[dff_diff.shape[0] - i]) + "-" + str(dff_diff[cross_time].iloc[dff_diff.shape[0] - i - 1]) for i in range(1, dff_diff.shape[0])], 
+                                     y = Y, mode = 'markers', name = "Value"))
+            fig_diff.add_trace(go.Scatter(x = [str(dff_diff[cross_time].iloc[dff_diff.shape[0] - i]) + "-" + str(dff_diff[cross_time].iloc[dff_diff.shape[0] - i - 1]) for i in range(1, dff_diff.shape[0])], 
+                                     y = [intercept + (i * coeff[0]) for i in range(dff_diff.shape[0])], 
+                                     mode = 'lines', name = "Regression"))
+            fig_diff.update_xaxes(showgrid=False)
+            fig_diff.add_annotation(x=0, y=0.85, xanchor='left', yanchor='bottom',
+                               xref='paper', yref='paper', showarrow=False, align='left',
+                               bgcolor='rgba(255, 255, 255, 0.5)', text = title)
+            fig_diff.update_layout(xaxis_title = cross_time, yaxis_title = list(dff_diff)[1])
+            flag = 1
+
+        fig_diff.update_layout(height = 400)
+
+        st.plotly_chart(fig_diff, use_container_width = True)
+
+        st.subheader("Regression Parameters")
+        if flag == 1:
+            st.write("Intercept: " + str(round(intercept, 4)))
+            st.write("Slope: " + str(round(coeff[0], 4)))
+        else: 
+            st.write("None") 
+            st.write("None")
+    
+    if widget == "Feature Importance Analysis":
+        # pareto chart with feature importance on ridge regressor
+        st.sidebar.subheader("Feature Importance Area")
+        feaImp_target = st.sidebar.selectbox("Feature Importance target", col_mul, 1)
+        id_sel_col = st.sidebar.selectbox("ID/category column", table.columns, 2)
+
+        st.header("Feature Importance Analysis")
+        
+        left, right = st.columns(2)
+        with left: 
+            fea_Imp_features = st.multiselect("Features:", col_mul)
+        with right:
+            id_sel = st.selectbox("Index/category selection:", ['All ids'] + list(table[id_sel_col].unique()), 0)
+        
+        scaler = StandardScaler()
+        if id_sel == 'All ids':
+            target = table[feaImp_target]
+            train_nm = table[fea_Imp_features]
+        else:
+            target = table[table[id_sel_col] == id_sel][feaImp_target]
+            train_nm = table[table[id_sel_col] == id_sel][fea_Imp_features]
+
+        for name_col in fea_Imp_features:
+            train_nm[name_col].replace({np.nan : train_nm[name_col].mean()}, inplace = True)
+        train_nm = scaler.fit_transform(train_nm)
+
+        target.replace({np.nan : 0}, inplace = True)
+
+        Alpha = [.1, 1, 10, 100]; titles = tuple("Feature importance for alpha = " + str(alpha) for alpha in Alpha)
+        Alpha = [[.1, 1], [10, 100]]
+
+        # Create figure with secondary y-axis
+        fig_tot = make_subplots(rows = 2, cols = 2, 
+                                specs = [[{"secondary_y": True}, {"secondary_y": True}], 
+                                         [{"secondary_y": True}, {"secondary_y": True}]], 
+                                subplot_titles = titles)
+
+        for num_row in range(2):
+            for num_col in range(2):
+                clf = Ridge(alpha = Alpha[num_row][num_col])
+                clf.fit(train_nm, target)
+
+                importance = clf.coef_
+                for i in range(len(importance)):
+                    if importance[i] < 0:
+                        importance[i] *= -1
+                dict_fin = {fea_Imp_features[i]: importance[i] for i in range(importance.shape[0])}
+                dict_fin = {k: v for k, v in sorted(dict_fin.items(), key=lambda item: item[1], reverse = True)}
+                dict_fin_per = {fea_Imp_features[i]: (importance[i] / np.sum(importance)) * 100 for i in range(importance.shape[0])}
+                dict_fin_per = {k: v for k, v in sorted(dict_fin_per.items(), key=lambda item: item[1], reverse = True)}
+                lis_final = []; res_par = 0
+                for value in dict_fin_per.values():
+                    res_par += value; lis_final.append(res_par)
+
+                fig_tot.add_trace(
+                    go.Bar(x = list(dict_fin_per.keys()), y = list(dict_fin_per.values()), 
+                           marker_color = 'rgb(158,202,225)', marker_line_color = 'rgb(8,48,107)', 
+                           marker_line_width = 1.5, opacity = 0.6, name = 'Value'),
+                    row = num_row + 1, col = num_col + 1, secondary_y = False
+                )
+
+                fig_tot.add_trace(
+                    go.Scatter(x = list(dict_fin_per.keys()), y = lis_final, line_color = 'rgb(255, 150, 0)'),
+                    row = num_row + 1, col = num_col + 1, secondary_y = True
+                )
+
+                # Add figure title
+                fig_tot.update_layout(
+                    title_text = "Feature importances", showlegend = False
+                )
+
+                # Set x-axis title
+                fig_tot.update_xaxes(title_text = "Variables")
+
+                # Set y-axes titles
+                fig_tot.update_yaxes(title_text="<b>Value</b> of importance", secondary_y=False)
+                fig_tot.update_yaxes(title_text="<b>%</b> of importance", secondary_y=True)
+
+        fig_tot.update_layout(height = 600)
+        st.plotly_chart(fig_tot, use_container_width=True)
+        
+    if widget == "Anomalies check":
+        use_col = st.sidebar.selectbox("Chosen Variable", col_mul, 0)
+        var_clean = table[use_col].dropna().values
+        
+        # MLE normal
+        mu_hat = var_clean.mean()
+        sigma_hat = math.sqrt(((var_clean - var_clean.mean()) ** 2).sum() / var_clean.shape[0])
+
+        # MLE exponential
+        lambda_hat_exp = var_clean.shape[0] / var_clean.sum()
+
+        # MLE log-normal
+        mu_hat_log = (np.ma.log(var_clean)).sum() / var_clean.shape[0]
+        sigma_hat_log = math.sqrt(((np.ma.log(var_clean) - mu_hat_log) ** 2).sum() / var_clean.shape[0])
+        
+        # MLE weibull
+        a, alpha_hat, b, beta_hat = stats.exponweib.fit(var_clean, floc=0, fa=1)
+        
+        # computing the p-values for all the distributions
+        result_norm = stats.kstest(var_clean, 'norm', (mu_hat, sigma_hat))
+        result_exp = stats.kstest(var_clean, 'expon')
+        result_lognorm = stats.kstest(var_clean, 'lognorm', (mu_hat_log, sigma_hat_log))
+        result_weibull2 = stats.kstest(var_clean, 'dweibull', (beta_hat, alpha_hat))
+        
+        # visual part
+        dis_fit = [[result_norm[1], result_exp[1], result_lognorm[1], result_weibull2[1]], 
+                   [int(result_norm[1] > 0.05), int(result_exp[1] > 0.05), int(result_lognorm[1] > 0.05), int(result_weibull2[1] > 0.05)]]
+        st.table(pd.DataFrame(dis_fit, columns = ['Normal', 'Exponential', 'Log-Norm', 'Weibul'], index = ['P-value', 'P > t']))
+
+        ch_distr = st.selectbox("Distribution anomalies estimation", ['Normal', 'Exponential', 'Log-Norm', 'Weibull'])
+        fig_distr = go.Figure(data = [go.Histogram(x = var_clean, 
+                                                   xbins = dict(start = var_clean.min(), end = var_clean.max(), size = (var_clean.max() - var_clean.min()) / 25),
+                                                   autobinx = False, 
+                                                   histnorm = 'probability density')])
+        
+        x_pos = np.linspace(var_clean.min(), var_clean.max(), 25)
+        if ch_distr == 'Normal':
+            fig_distr.add_trace(go.Scatter(x = x_pos, y = stats.norm(mu_hat, sigma_hat).pdf(x_pos), mode = 'lines+markers', name = "Est Distribution"))
+        if ch_distr == 'Exponential':
+            fig_distr.add_trace(go.Scatter(x = x_pos, y = stats.expon(lambda_hat_exp).pdf(x_pos), mode = 'lines+markers', name = "Est Distribution"))
+        if ch_distr == 'Log-Norm':
+            fig_distr.add_trace(go.Scatter(x = x_pos, y = stats.lognorm(mu_hat_log, sigma_hat_log).pdf(x_pos), mode = 'lines+markers', name = "Est Distribution"))
+        if ch_distr == 'Weibull':
+            fig_distr.add_trace(go.Scatter(x = x_pos, y = stats.dweibull(alpha_hat, beta_hat).pdf(x_pos), mode = 'lines+markers', name = "Est Distribution"))
+        
+        fig_distr.update_layout(title = 'Hist plot to comapre data with possible underlying distribution', xaxis_title = use_col + ' values', yaxis_title = use_col + ' PMF and ch. distr. PDF')
+        st.plotly_chart(fig_distr, use_container_width=True)
+         
+        # outlier part
+        st.markdown('In the next part there is the effective detection of the outliers contained into the data. The detection is made by the **Tukey\'s fences**. ' + 
+                    'These fences are calculated by refering to the next formulas and the applied formula depend on the type of distribution chosen ' + 
+                    'and the **skewness** of the data. \n If the data is **skewed** the fences are calculated in this way: ')
+        st.latex(r'''[Q_{1} - (k \cdot ITQ), Q_{3} + (k \cdot ITQ)]''')
+        st.markdown('If the data distribution is **not skewed** the formula changes with a correction term and becomes:')
+        st.latex(r'''[Q_{1} - (k \cdot e^{-4mc} \cdot ITQ), Q_{3} + (k \cdot e^{3mc} \cdot ITQ)]''')
+        st.markdown('If mc > 0 and: ')
+        st.latex(r'''[Q_{1} - (k \cdot e^{-3mc} \cdot ITQ), Q_{3} + (k \cdot e^{4mc} \cdot ITQ)]''')
+        st.markdown('If mc < 0. \n In these equations $Q_{1}$ represent the first quantile, while $Q_{3}$ represents the third quantile, $ITQ = Q_{3} - Q_{1}$, k is the ' + 
+                    '**Tukey\'s constant** and mc is the value of the **MedCouple** function. A value is treated as an outlier if it doesen\'t fit into these intervals. ' + 
+                    'In this application we make a distinction between strong and weak outlier. A strong outlier $o_{s}$ is a value that given a $t_{f}$ value for the ' + 
+                    'fence\'s correction term: ')
+        st.markdown('$o_{s} < Q_{1} - 2 \cdot t_{f}$ if it\'s a left outlier and $o_{s} > Q_{3} + 2 \cdot t_{f}$ if it\'s a right one')
+        st.markdown('While a weak outlier $o_{w}$ is defined as: ')
+        st.markdown('$o_{w} \in [Q_{1} - 2 \cdot t_{f}, Q_{1} - t_{f}]$ if it\'s a left outlier and $o_{w} \in [Q_{3} + t_{f}, Q_{3} + 2 \cdot t_{f}]$ if it\'s a right one')
+        st.markdown('In the next numeric input you can insert the value of the **Tukey\'s constant** (is usually setted to 1,5), from the previous formulas we can derive ' + 
+                    'that a smaller **k** will reduce the fence\'s size (you will find more outliers but less significant), while a bigger **k** will have an opposite effect,' + 
+                    ' so this value must be chosen wisely.')
+        
+        tukey_const = st.number_input("Tukey’s constant value", 0.5, 7.5, 1.5)
+        Q3 = table[use_col].quantile(0.75); Q1 = table[use_col].quantile(0.25); ITQ = Q3- Q1
+        
+        if stats.skewtest(var_clean)[1] >= 0.025:
+            df_AllOut = table[(table[use_col] <= Q1 - (tukey_const * ITQ)) | (table[use_col] >= Q3 + (tukey_const * ITQ))]
+            df_StLeftOut = table[table[use_col] < Q1 - (2 * tukey_const * ITQ)]
+            df_WeLeftOut = table[(table[use_col] >= Q1 - (2 * tukey_const * ITQ)) & (table[use_col] <= Q1 - (tukey_const * ITQ))]
+            df_WeRightOut = table[(table[use_col] >= Q3 + (tukey_const * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * ITQ))]
+            df_StRightOut = table[table[use_col] > Q3 + (2 * tukey_const * ITQ)]
+            st.table(pd.DataFrame(np.array([df_StLeftOut.shape[0], df_WeLeftOut.shape[0], df_WeRightOut.shape[0], df_StRightOut.shape[0]]).reshape(1, 4),
+                                  index = ['Number'], columns = ['Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers']))
+        else:
+            # calculating the medcouple function for the tukey fence
+            if var_clean.shape[0] > 5000:
+                MC = np.array([medcouple(var_clean[np.random.choice(var_clean.shape[0], 5000)]) for _ in range(50)]).mean()
+            else:
+                MC = medcouple(var_clean)
+            
+            # calculating the tukey fence
+            if MC > 0:
+                df_AllOut = table[(table[use_col] <= Q1 - (tukey_const * math.exp(-4 * MC) * ITQ)) | (table[use_col] >= Q3 + (tukey_const * math.exp(3 * MC) * ITQ))]
+                df_StLeftOut = table[table[use_col] < Q1 - (2 * tukey_const * math.exp(-4 * MC) * ITQ)]
+                df_WeLeftOut = table[(table[use_col] >= Q1 - (2 * tukey_const * math.exp(-4 * MC) * ITQ)) & (table[use_col] <= Q1 - (tukey_const * math.exp(-4 * MC) * ITQ))]
+                df_WeRightOut = table[(table[use_col] >= Q3 + (tukey_const * math.exp(3 * MC) * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * math.exp(3 * MC) * ITQ))]
+                df_StRightOut = table[table[use_col] > Q3 + (2 * tukey_const * math.exp(3 * MC) * ITQ)]
+                st.table(pd.DataFrame(np.array([df_StLeftOut.shape[0], df_WeLeftOut.shape[0], df_WeRightOut.shape[0], df_StRightOut.shape[0]]).reshape(1, 4),
+                                      index = ['Number'], columns = ['Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers']))
+            else:
+                df_AllOut = table[(table[use_col] <= Q1 - (tukey_const * math.exp(-3 * MC) * ITQ)) | (table[use_col] >= Q3 + (tukey_const * math.exp(4 * MC) * ITQ))]
+                df_StLeftOut = table[table[use_col] < Q1 - (2 * tukey_const * math.exp(-3 * MC) * ITQ)]
+                df_WeLeftOut = table[(table[use_col] >= Q1 - (2 * tukey_const * math.exp(-3 * MC) * ITQ)) & (table[use_col] <= Q1 - (tukey_const * math.exp(-3 * MC) * ITQ))]
+                df_WeRightOut = table[(table[use_col] >= Q3 + (tukey_const * math.exp(4 * MC) * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * math.exp(4 * MC) * ITQ))]
+                df_StRightOut = table[table[use_col] > Q3 + (2 * tukey_const * math.exp(4 * MC) * ITQ)]
+                st.table(pd.DataFrame(np.array([df_StLeftOut.shape[0], df_WeLeftOut.shape[0], df_WeRightOut.shape[0], df_StRightOut.shape[0]]).reshape(1, 4),
+                                      index = ['Number'], columns = ['Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers']))
+        
+        # a more specific view of the ouliers by country or generic id and type
+        left, right = st.columns(2)
+        with left: 
+            out_id_col = st.selectbox("Outlier index col", table.columns, 0)
+        with right:
+            out_type = st.selectbox("Outlier type", ['All', 'Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers'], 0)
+        
+        if out_type == 'All':
+            df_AllOut['Sel'] = df_AllOut[out_id_col].str.slice(0, 2).values
+            res = {out_id_col: df_AllOut['Sel'].unique(), 'Num. Out.': []}
+            for nut_id in res[out_id_col]:
+                  res['Num. Out.'].append(df_AllOut[df_AllOut['Sel'] == nut_id].shape[0])
+            res = pd.DataFrame(res)
+
+            px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
+            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[out_id_col], featureidkey = 'properties.ISO2',
+                                           color = 'Num. Out.', color_continuous_scale = px.colors.cyclical.IceFire,
+                                           range_color = (res['Num. Out.'].min(), res['Num. Out.'].max()),
+                                           mapbox_style = "carto-positron",
+                                           zoom = 3, center = {"lat": 47.42, "lon": 15.53},
+                                           opacity = 0.5,
+                                           labels = {'Num. Out.': 'Num. Out.'})
+            st.plotly_chart(map_box, use_container_width=True)
+         
+        if out_type == 'Strong left outliers':
+            df_StLeftOut['Sel'] = df_StLeftOut[out_id_col].str.slice(0, 2).values
+            res = {out_id_col: df_StLeftOut['Sel'].unique(), 'Num. Out.': []}
+            for nut_id in res[out_id_col]:
+                  res['Num. Out.'].append(df_StLeftOut[df_StLeftOut['Sel'] == nut_id].shape[0])
+            res = pd.DataFrame(res)
+
+            px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
+            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[out_id_col], featureidkey = 'properties.ISO2',
+                                           color = 'Num. Out.', color_continuous_scale = px.colors.cyclical.IceFire,
+                                           range_color = (res['Num. Out.'].min(), res['Num. Out.'].max()),
+                                           mapbox_style = "carto-positron",
+                                           zoom = 3, center = {"lat": 47.42, "lon": 15.53},
+                                           opacity = 0.5,
+                                           labels = {'Num. Out.': 'Num. Out.'})
+            st.plotly_chart(map_box, use_container_width=True)
+            
+        if out_type == 'Weak left outliers':
+            df_WeLeftOut['Sel'] = df_WeLeftOut[out_id_col].str.slice(0, 2).values
+            res = {out_id_col: df_WeLeftOut['Sel'].unique(), 'Num. Out.': []}
+            for nut_id in res[out_id_col]:
+                  res['Num. Out.'].append(df_WeLeftOut[df_WeLeftOut['Sel'] == nut_id].shape[0])
+            res = pd.DataFrame(res)
+
+            px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
+            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[out_id_col], featureidkey = 'properties.ISO2',
+                                           color = 'Num. Out.', color_continuous_scale = px.colors.cyclical.IceFire,
+                                           range_color = (res['Num. Out.'].min(), res['Num. Out.'].max()),
+                                           mapbox_style = "carto-positron",
+                                           zoom = 3, center = {"lat": 47.42, "lon": 15.53},
+                                           opacity = 0.5,
+                                           labels = {'Num. Out.': 'Num. Out.'})
+            st.plotly_chart(map_box, use_container_width=True)
+            
+        if out_type == 'Weak right outliers':
+            df_WeRightOut['Sel'] = df_WeRightOut[out_id_col].str.slice(0, 2).values
+            res = {out_id_col: df_WeRightOut['Sel'].unique(), 'Num. Out.': []}
+            for nut_id in res[out_id_col]:
+                  res['Num. Out.'].append(df_WeRightOut[df_WeRightOut['Sel'] == nut_id].shape[0])
+            res = pd.DataFrame(res)
+
+            px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
+            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[out_id_col], featureidkey = 'properties.ISO2',
+                                           color = 'Num. Out.', color_continuous_scale = px.colors.cyclical.IceFire,
+                                           range_color = (res['Num. Out.'].min(), res['Num. Out.'].max()),
+                                           mapbox_style = "carto-positron",
+                                           zoom = 3, center = {"lat": 47.42, "lon": 15.53},
+                                           opacity = 0.5,
+                                           labels = {'Num. Out.': 'Num. Out.'})
+            st.plotly_chart(map_box, use_container_width=True)
+            
+        if out_type == 'Strong right outliers':
+            df_StRightOut['Sel'] = df_StRightOut[out_id_col].str.slice(0, 2).values
+            res = {out_id_col: df_StRightOut['Sel'].unique(), 'Num. Out.': []}
+            for nut_id in res[out_id_col]:
+                  res['Num. Out.'].append(df_StRightOut[df_StRightOut['Sel'] == nut_id].shape[0])
+            res = pd.DataFrame(res)
+
+            px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
+            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[out_id_col], featureidkey = 'properties.ISO2',
+                                           color = 'Num. Out.', color_continuous_scale = px.colors.cyclical.IceFire,
+                                           range_color = (res['Num. Out.'].min(), res['Num. Out.'].max()),
+                                           mapbox_style = "carto-positron",
+                                           zoom = 3, center = {"lat": 47.42, "lon": 15.53},
+                                           opacity = 0.5,
+                                           labels = {'Num. Out.': 'Num. Out.'})
+            st.plotly_chart(map_box, use_container_width=True)
+        
+        out_cou = st.selectbox("Choose the specific value for the id", ['All ids'] + list(res[out_id_col]), 0)
+         
+        if out_cou == 'All ids': 
+            st.write(df_AllOut)
+        else:
+            st.write(df_AllOut) 
+        
+    if widget == "Consistency checks":
+        methodology = st.sidebar.selectbox("Analysis to apply", ['Multiannual analysis', 'Ratio analysis'], 0)
+        if methodology == 'Ratio analysis':
+            con_checks_id_col = st.sidebar.selectbox("Index col", table.columns, 0)
+            country_sel_col = st.sidebar.selectbox("Country col", ['-'] + list(table.columns), 0)
+            cat_sel_col = st.sidebar.selectbox("Category col", ['-'] + list(table.columns), 0)
+            flag_issue_quantile = st.sidebar.number_input("Flags quantile (S2 and S3)", 0.0, 30.0, 5.0, 0.1)
+            prob_cases_per = st.sidebar.number_input("Percentage problematic cases", 0.0, 100.0, 20.0)
+            p_value_trend_per = st.sidebar.number_input("P-value percentage trend estimation", 5.0, 50.0, 10.0)
+
+            new_ratio_radio = st.radio("Do you want to create a new ratio or you want to use an existing one:", ('Create a new ratio', 'Existing one'))
+            if new_ratio_radio == 'Existing one':
+                con_checks_feature = st.selectbox("Variable consistency checks:", col_mul)
+            else:
+                con_checks_feature = st.text_input('Write here the name of the new ratio', 'R_1')
+                left1, right1 = st.columns(2)
+                with left1:
+                    ratio_num = st.selectbox("Numerator column", col_mul)
+                with right1:
+                    ratio_den = st.selectbox("Denominator column", col_mul)
+                table = pd.concat([table, pd.DataFrame(np.divide(table[ratio_num].values, table[ratio_den].values), columns = [con_checks_feature])], axis = 1)
+            flag_radio = st.radio("Do you want to use the flags:", ('Yes', 'No'))
+            if flag_radio == 'Yes':
+                left1, right1 = st.columns(2)
+                with left1:
+                    flags_col = st.selectbox("Flag variable", table.columns)
+                with right1:
+                    notes_col = st.selectbox("Notes variable", ['-'] + list(table.columns))
+            
+
+            table['Class trend'] = 0
+            for id_inst in table[con_checks_id_col].unique():
+                # trend classification
+                inst = table[table[con_checks_id_col] == id_inst][con_checks_feature].values[::-1]
+                geo_mean_vec = np.delete(inst, np.where((inst == 0) | (np.isnan(inst))))
+                if geo_mean_vec.shape[0] > 3:
+                    mann_kend_res = mk.original_test(geo_mean_vec)
+                    trend, p, tau = mann_kend_res.trend, mann_kend_res.p, mann_kend_res.Tau
+                    if trend == 'increasing':
+                        table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 5
+                    if trend == 'decreasing':
+                        table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 1
+                    if trend == 'no trend':
+                        if p <= p_value_trend_per/100 and tau >= 0:
+                            table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 4
+                        if p <= p_value_trend_per/100 and tau < 0:
+                            table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 2
+                        if p > p_value_trend_per/100:
+                            table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
+
+            dict_flags = dict(); countries = list(table[country_sel_col].unique())
+            if cat_sel_col != '-':
+                categories = list(table[cat_sel_col].unique())
+                dict_flags[con_checks_feature] = dict()
+                for cc in countries:
+                    country_table = table[table[country_sel_col] == cc][[con_checks_id_col, con_checks_feature]]
+                    inst_lower = set(country_table[country_table[con_checks_feature] <= country_table[con_checks_feature].quantile(flag_issue_quantile/100)][con_checks_id_col].values)
+                    inst_upper = set(country_table[country_table[con_checks_feature] >= country_table[con_checks_feature].quantile(1 - (flag_issue_quantile/100))][con_checks_id_col].values)
+                    dict_flags[con_checks_feature][cc] = inst_lower.union(inst_upper)
+                for cat in categories:
+                    cat_table = table[table[cat_sel_col] == cat][[con_checks_id_col, con_checks_feature]]
+                    inst_lower = set(cat_table[cat_table[con_checks_feature] <= cat_table[con_checks_feature].quantile(flag_issue_quantile/100)][con_checks_id_col].values)
+                    inst_upper = set(cat_table[cat_table[con_checks_feature] >= cat_table[con_checks_feature].quantile(1 - (flag_issue_quantile/100))][con_checks_id_col].values)
+                    dict_flags[con_checks_feature][cat] = inst_lower.union(inst_upper)
+
+                dict_check_flags = {}; set_app = set()
+                for cc in countries:
+                    set_app = set_app.union(dict_flags[con_checks_feature][cc])
+                for cat in categories:
+                    set_app = set_app.union(dict_flags[con_checks_feature][cat])
+                dict_check_flags[con_checks_feature] = set_app
+
+                table['Prob inst ' + con_checks_feature] = 0
+                table.loc[table[table[con_checks_id_col].isin(dict_check_flags[con_checks_feature])].index, 'Prob inst ' + con_checks_feature] = 1
+
+                # table reporting the cases by countries
+                DV_fin_res = np.zeros((len(categories), len(countries)), dtype = int)
+                for j in range(len(countries)):
+                    for el in dict_flags[con_checks_feature][countries[j]]:
+                        DV_fin_res[categories.index(table[table[con_checks_id_col] == el][cat_sel_col].unique()[0]), j] += 1
+                for j in range(len(categories)):
+                    for el in dict_flags[con_checks_feature][categories[j]]:
+                        if el not in dict_flags[con_checks_feature][countries[countries.index(el[:2])]]:
+                            DV_fin_res[j, countries.index(el[:2])] += 1
+
+                DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 1).reshape((len(categories), 1)), axis = 1)
+                DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 0).reshape(1, len(countries) + 1), axis = 0)
+                list_fin_res = DV_fin_res.tolist(); list_prob_cases = []
+                for row in range(len(list_fin_res)):
+                    for i in range(len(list_fin_res[row])):
+                        if row != len(list_fin_res)-1 and i != len(list_fin_res[row])-1:
+                            den = len(table[(table[country_sel_col] == countries[i]) & (table[cat_sel_col] == categories[row])][con_checks_id_col].unique())
+                        if row == len(list_fin_res)-1 and i != len(list_fin_res[row])-1:
+                            den = len(table[table[country_sel_col] == countries[i]][con_checks_id_col].unique())
+                        if row != len(list_fin_res)-1 and i == len(list_fin_res[row])-1:
+                            den = len(table[table[cat_sel_col] == categories[row]][con_checks_id_col].unique())
+                        if row == len(list_fin_res)-1 and i == len(list_fin_res[row])-1:
+                            den = len(table[con_checks_id_col].unique())
+                        num = list_fin_res[row][i]
+                        if den != 0:
+                            num_app = round(100 * num/den, 2); list_fin_res[row][i] = str(list_fin_res[row][i]) + '\n(' + str(num_app) + '%)'
+                        else:
+                            num_app = 0; list_fin_res[row][i] = '0\n(0%)'
+                        if i != len(list_fin_res[row])-1 and num_app >= prob_cases_per:
+                            if row != len(list_fin_res)-1:
+                                list_prob_cases.append([con_checks_feature, countries[i], categories[int(row % len(categories))], str(num_app) + '%', str(num) + ' / ' + str(den)])
+                            else:
+                                list_prob_cases.append(['Total', countries[i], 'All categories', str(num_app) + '%', str(num) + ' / ' + str(den)])
+
+                flag_notes_on = False
+                if flag_radio == 'Yes':
+                    if table[flags_col].dtypes == 'O':
+                        if notes_col == '-':
+                            ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p')][con_checks_id_col].values)
+                        else:
+                            flag_notes_on = True
+                            ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (pd.isna(table[notes_col]))][con_checks_id_col].values).union(set(table[table[flags_col] == 'p'][con_checks_id_col].values))
+                            twos = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (-pd.isna(table[notes_col]))][con_checks_id_col].values)
+                            ones = ones - (ones & twos)
+                    else:
+                        ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
+                    if flag_notes_on:
+                        summ_table = pd.DataFrame([[str(len(twos.intersection(dict_check_flags[con_checks_feature]))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(dict_check_flags[con_checks_feature]))) / len(twos), 2)) + '%'], 
+                                                   [str(len(dict_check_flags[con_checks_feature])) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(dict_check_flags[con_checks_feature]) / len(ones.union(twos))), 2)) + '%'], 
+                                                   [str(len(dict_check_flags[con_checks_feature].difference(ones.union(twos)))), str(round((100 * len(dict_check_flags[con_checks_feature].difference(ones.union(twos)))) / len(dict_check_flags[con_checks_feature]), 2)) + '%']], 
+                                                   columns = ['Absolute Values', 'In percentage'], 
+                                                   index = ['Accuracy', 'new/prev cases', 'Extra cases'])
+                    else:
+                        summ_table = pd.DataFrame([[str(len(ones.intersection(dict_check_flags[con_checks_feature]))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(dict_check_flags[con_checks_feature]))) / len(ones), 2)) + '%'], 
+                                                   [str(len(dict_check_flags[con_checks_feature])) + ' / ' + str(len(ones)), str(round(100 * (len(dict_check_flags[con_checks_feature]) / len(ones)), 2)) + '%'], 
+                                                   [str(len(dict_check_flags[con_checks_feature].difference(ones))), str(round((100 * len(dict_check_flags[con_checks_feature].difference(ones))) / len(dict_check_flags[con_checks_feature]), 2)) + '%']], 
+                                                   columns = ['Absolute Values', 'In percentage'], 
+                                                   index = ['Accuracy', 'new/prev cases', 'Extra cases'])
+                    st.table(summ_table)
+
+                table_fin_res = pd.DataFrame(list_fin_res, index = [con_checks_feature + ' (' + str(cat) + ')' for cat in categories] + ['Total'], columns = countries + ['Total'])
+                st.table(table_fin_res)
+                st.table(pd.DataFrame(list_prob_cases, columns = ['Variable', 'Country', 'Category', '% Value', 'Absolute values']))
+
+                if len(list(table['Class trend'].unique())) > 1:
+                    dict_trend = {'Strong decrease': [], 'Weak decrease': [], 'Undetermined trend': [], 'Weak increase': [], 'Strong increase': []}; set_trend = set()
+                    for inst in dict_check_flags[con_checks_feature]:
+                        class_tr = int(table[table[con_checks_id_col] == inst]['Class trend'].unique()[0])
+                        if class_tr != 0:
+                            dict_trend[list(dict_trend.keys())[class_tr-1]].append(inst)
+                            if class_tr == 1 or class_tr == 3 or class_tr == 5:
+                                set_trend.add(inst)
+                    trend_table = pd.DataFrame([len(v) for v in dict_trend.values()], index = dict_trend.keys(), columns = ['Number of institutions'])
+
+                    st.table(trend_table)
+                    if flag_radio == 'Yes':
+                        if flag_notes_on:
+                            st.table(pd.DataFrame([[str(len(twos.intersection(set_trend))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(set_trend))) / len(twos), 2)) + '%'], 
+                                                   [str(len(set_trend)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(set_trend) / len(ones.union(twos))), 2)) + '%'], 
+                                                   [str(len(set_trend.difference(ones.union(twos)))), str(100 * len(set_trend.difference(ones.union(twos))) / len(dict_check_flags[con_checks_feature])) + '%']], 
+                                                   columns = ['Absolute Values', 'In percentage'], 
+                                                   index = ['Accuracy', 'new/prev cases', 'Extra cases']))
+                        else:
+                            st.table(pd.DataFrame([[str(len(ones.intersection(set_trend))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(set_trend))) / len(ones), 2)) + '%'], 
+                                                   [str(len(set_trend)) + ' / ' + str(len(ones)), str(round(100 * (len(set_trend) / len(ones)), 2)) + '%'], 
+                                                   [str(len(set_trend.difference(ones))), str(100 * len(set_trend.difference(ones)) / len(dict_check_flags[con_checks_feature])) + '%']], 
+                                                   columns = ['Absolute Values', 'In percentage'], 
+                                                   index = ['Accuracy', 'new/prev cases', 'Extra cases']))
+
+                    trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
+                    trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
+                    st.plotly_chart(px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_feature, 'Reference year']], 
+                                            x = 'Reference year', y = con_checks_feature), use_container_width=True)
+
+                st.write('To download the results select a time variable and then click the Download data button')
+                left1, right1 = st.columns(2)
+                with left1:
+                    time_col = st.selectbox("Time variable:", table.columns)
+                with right1:
+                    descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
+
+                t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
+                if flag_radio == 'Yes':
+                    df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Existing flag', 'Detected case']
+                else:
+                    df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Detected case']
+                for inst in sorted(list(table[con_checks_id_col].unique())):
+                    df_inst = table[table[con_checks_id_col] == inst]
+                    list_el = [inst]
+                    for col in descr_col:
+                        list_el.append(df_inst[col].unique()[0])
+                    for t in t_col:
+                        if df_inst[df_inst[time_col] == int(t)].shape[0] != 0:
+                            list_el.append(df_inst[df_inst[time_col] == int(t)][con_checks_feature].values[0])
+                        else:
+                            list_el.append(np.nan)
+                    list_el.append(con_checks_feature)
+                    if df_inst['Class trend'].unique()[0] == 0:
+                        list_el.append('Impossible to calculate')
+                    else:
+                        list_el.append(list(dict_trend.keys())[df_inst['Class trend'].unique()[0]-1])
+                    if flag_radio == 'Yes':
+                        if notes_col != '-':
+                            if (inst not in ones) and (inst not in twos):
+                                list_el.append(0)
+                            if inst in ones:
+                                list_el.append(1)
+                            if inst in twos:
+                                list_el.append(2)
+                        else:
+                            if inst not in ones:
+                                list_el.append(0)
+                            else:
+                                list_el.append(1)
+                    list_el.append(df_inst['Prob inst ' + con_checks_feature].unique()[0])
+                    list_fin.append(list_el)
+                for i in range(len(list_fin)):
+                    if len(df_cols) != len(list_fin[i]):
+                        st.write(list_fin[i])
+                table_download = pd.DataFrame(list_fin, columns = df_cols)
+                st.download_button(label = "Download data with lables", data = table_download.to_csv(index = None, sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
+            else:
+                st.warning('you have to choose a value for the field "Category selection column".')
+        else:
+            con_checks_id_col = st.sidebar.selectbox("Index col", table.columns, 0)
+            country_sel_col = st.sidebar.selectbox("Country col", ['-'] + list(table.columns), 0)
+            cat_sel_col = st.sidebar.selectbox("Category col", ['-'] + list(table.columns), 0)
+            retain_quantile = st.sidebar.number_input("Quantile to exclude from the calculation (S1)", 1.0, 10.0, 2.0, 0.1)
+            flag_issue_quantile = st.sidebar.number_input("Flags quantile (S2 and S3)", 35.0, 100.0, 95.0, 0.1)
+            prob_cases_per = st.sidebar.number_input("Percentage problematic cases", 0.0, 100.0, 20.0)
+            p_value_trend_per = st.sidebar.number_input("P-value percentage trend estimation", 5.0, 50.0, 10.0)
+            rupt_y_per = st.sidebar.number_input("Rupture years threshold", 5.0, 50.0, 25.0)
+
+            con_checks_features = st.selectbox("Variable consistency checks:", col_mul)
+            flag_radio = st.radio("Do you want to use the flags:", ('Yes', 'No'))
+            if flag_radio == 'Yes':
+                left1, right1 = st.columns(2)
+                with left1:
+                    flags_col = st.selectbox("Flag variable", table.columns)
+                with right1:
+                    notes_col = st.selectbox("Notes variable", ['-'] + list(table.columns))
+                
+            res_ind = dict(); table['Class trend'] = 0; table['Rupt. years'] = ''
+            for id_inst in table[con_checks_id_col].unique():
+                # calculations of the geometric mean
+                inst = table[table[con_checks_id_col] == id_inst][con_checks_features].values[::-1]
+                geo_mean_vec = np.delete(inst, np.where((inst == 0) | (np.isnan(inst))))
+                if geo_mean_vec.shape[0] != 0:
+                    res_ind[id_inst] = math.pow(math.fabs(np.prod(geo_mean_vec)), 1/geo_mean_vec.shape[0])
+                else:
+                    res_ind[id_inst] = np.nan
+                    
+                # trend classification
+                if geo_mean_vec.shape[0] > 3:
+                    mann_kend_res = mk.original_test(geo_mean_vec)
+                    trend, p, tau = mann_kend_res.trend, mann_kend_res.p, mann_kend_res.Tau
+                    if trend == 'increasing':
+                        table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 5
+                    if trend == 'decreasing':
+                        table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 1
+                    if trend == 'no trend':
+                        if p <= p_value_trend_per/100 and tau >= 0:
+                            table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 4
+                        if p <= p_value_trend_per/100 and tau < 0:
+                            table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 2
+                        if p > p_value_trend_per/100:
+                            table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
+            
+            indices = pd.DataFrame(res_ind.values(), index = res_ind.keys(), columns = [con_checks_features])
+            indices.drop(index = set(indices[(pd.isna(indices[con_checks_features])) | (indices[con_checks_features] <= indices.quantile(retain_quantile/100).values[0])].index), axis = 0, inplace = True)
+
+            res = dict(); list_prob_cases = []
+            # does the calculation with the delta+ and delta-minus for the multiannual checks and stores it into a dictionary 
+            for id_inst in indices.index.values:
+                inst = table[(table[con_checks_id_col] == id_inst) & (-pd.isna(table[con_checks_features]))][con_checks_features].values
+                num_row = len(inst); delta_pos = list(); delta_neg = list()
+                for i in range(1, num_row):
+                    if inst[num_row - i - 1] - inst[num_row - i] < 0:
+                        delta_neg.append(round(inst[num_row - i - 1] - inst[num_row - i], 2))
+                    else:
+                        delta_pos.append(round(inst[num_row - i - 1] - inst[num_row - i], 2))
+                res[id_inst] = [delta_pos, delta_neg]
+
+            DV = dict() # the dictionary in wich we'll store all the DV and further the DM values for the variability from years
+            for key, value in res.items():
+                res_par = 0
+                if len(value[0]) != 0 and len(value[1]) != 0:
+                    res_par = sum(value[0]) * sum(value[1])
+                DV[key] = round(math.fabs(res_par)/indices[con_checks_features][key] ** 1.5, 3)
+
+                DV_df = pd.DataFrame(DV.values(), index = DV.keys(), columns = [con_checks_features])
+                dict_check_flags = set(DV_df[DV_df[con_checks_features] >= DV_df[con_checks_features].quantile(flag_issue_quantile/100)].index)
+
+            for el in table[country_sel_col].unique():
+                if len(el) > 2:
+                    table['New Country Code'] = table[country_sel_col].str[:2]
+                    country_sel_col = 'New Country Code'
+                    break
+            list_countries = list(table[country_sel_col].unique())
+             
+            if cat_sel_col == '-':
+                DV_fin_res = np.zeros((1, len(list_countries)), dtype = int)
+                for flag in dict_check_flags:
+                    DV_fin_res[0, list_countries.index(flag[:2])] += 1
+            else:
+                list_un_cat = list(table[cat_sel_col].unique())
+                DV_fin_res = np.zeros((len(list_un_cat), len(list_countries)), dtype = int)
+                for flag in dict_check_flags:
+                    DV_fin_res[list_un_cat.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0]), list_countries.index(flag[:2])] += 1
+
+            table['Prob inst ' + con_checks_features] = 0
+            table.loc[table[table[con_checks_id_col].isin(dict_check_flags)].index, 'Prob inst ' + con_checks_features] = 1
+                        
+            if cat_sel_col == '-':
+                DV_fin_res = np.append(DV_fin_res, np.array([np.sum(DV_fin_res, axis = 0)]), axis = 0)
+                DV_fin_res = np.append(DV_fin_res, DV_fin_res, axis = 1)
+                list_fin_res = DV_fin_res.tolist()
+                for row in range(len(list_fin_res)):
+                    for i in range(len(list_fin_res[row])):
+                        if i != len(list_fin_res[row])-1:
+                            den = len(table[table[country_sel_col] == list_countries[i]][con_checks_id_col].unique())
+                        else:
+                            den = len(table[con_checks_id_col].unique())
+                        num = list_fin_res[row][i]
+                        if den != 0:
+                            num_app = round(100 * num/den, 2); list_fin_res[row][i] = str(list_fin_res[row][i]) + '\n(' + str(num_app) + '%)'
+                        else:
+                            num_app = 0; list_fin_res[row][i] = '0\n(0%)'
+                        if i != len(list_fin_res[row])-1 and num_app >= prob_cases_per:
+                            if row != len(list_fin_res)-1:
+                                list_prob_cases.append([con_checks_features, list_countries[i], str(num_app) + '%', str(num) + ' / ' + str(den)])
+                            else:
+                                list_prob_cases.append(['Total', list_countries[i], str(num_app) + '%', str(num) + ' / ' + str(den)])
+                table_fin_res = pd.DataFrame(list_fin_res, index = [con_checks_features, 'Total'], columns = list_countries + ['Total'])
+            else:
+                DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
+                DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
+                list_fin_res = DV_fin_res.tolist()
+                for row in range(len(list_fin_res)):
+                    for i in range(len(list_fin_res[row])):
+                        if row != len(list_fin_res)-1 and i != len(list_fin_res[row])-1:
+                            den = len(table[(table[country_sel_col] == list_countries[i]) & (table[cat_sel_col] == list_un_cat[row])][con_checks_id_col].unique())
+                        if row == len(list_fin_res)-1 and i != len(list_fin_res[row])-1:
+                            den = len(table[table[country_sel_col] == list_countries[i]][con_checks_id_col].unique())
+                        if row != len(list_fin_res)-1 and i == len(list_fin_res[row])-1:
+                            den = len(table[table[cat_sel_col] == list_un_cat[row]][con_checks_id_col].unique())
+                        if row == len(list_fin_res)-1 and i == len(list_fin_res[row])-1:
+                            den = len(table[con_checks_id_col].unique())
+                        num = list_fin_res[row][i]
+                        if den != 0:
+                            num_app = round(100 * num/den, 2); list_fin_res[row][i] = str(list_fin_res[row][i]) + '\n(' + str(num_app) + '%)'
+                        else:
+                            num_app = 0; list_fin_res[row][i] = '0\n(0%)'
+                        if i != len(list_fin_res[row])-1 and num_app >= prob_cases_per:
+                            if row != len(list_fin_res)-1:
+                                list_prob_cases.append([con_checks_features, list_countries[i], list_un_cat[int(row % len(list_un_cat))], str(num_app) + '%', str(num) + ' / ' + str(den)])
+                            else:
+                                list_prob_cases.append(['Total', list_countries[i], 'All categories', str(num_app) + '%', str(num) + ' / ' + str(den)])
+                table_fin_res = pd.DataFrame(list_fin_res, index = [con_checks_features + ' (' + str(cat) + ')' for cat in list_un_cat] + ['Total'], columns = list_countries + ['Total'])
+
+            flag_notes_on = False
+            if flag_radio == 'Yes':
+                if table[flags_col].dtypes == 'O':
+                    if notes_col == '-':
+                        ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p')][con_checks_id_col].values)
+                    else:
+                        flag_notes_on = True
+                        ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (pd.isna(table[notes_col]))][con_checks_id_col].values).union(set(table[table[flags_col] == 'p'][con_checks_id_col].values))
+                        twos = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (-pd.isna(table[notes_col]))][con_checks_id_col].values)
+                        ones = ones - (ones & twos)
+                else:
+                    ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
+                if flag_notes_on:
+                    summ_table = pd.DataFrame([[str(len(twos.intersection(dict_check_flags))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(dict_check_flags))) / len(twos), 2)) + '%'], 
+                                               [str(len(dict_check_flags)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(dict_check_flags) / len(ones.union(twos))), 2)) + '%'], 
+                                               [str(len(dict_check_flags.difference(ones.union(twos)))), str(round((100 * len(dict_check_flags.difference(ones.union(twos)))) / len(dict_check_flags), 2)) + '%']], 
+                                               columns = ['Absolute Values', 'In percentage'], 
+                                               index = ['Accuracy', 'new/prev cases', 'Extra cases'])
+                else:
+                    summ_table = pd.DataFrame([[str(len(ones.intersection(dict_check_flags))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(dict_check_flags))) / len(ones), 2)) + '%'], 
+                                               [str(len(dict_check_flags)) + ' / ' + str(len(ones)), str(round(100 * (len(dict_check_flags) / len(ones)), 2)) + '%'], 
+                                               [str(len(dict_check_flags.difference(ones))), str(round((100 * len(dict_check_flags.difference(ones))) / len(dict_check_flags), 2)) + '%']], 
+                                               columns = ['Absolute Values', 'In percentage'], 
+                                               index = ['Accuracy', 'new/prev cases', 'Extra cases'])
+                st.table(summ_table)
+
+            st.table(table_fin_res)
+            if cat_sel_col == '-':
+                st.table(pd.DataFrame(list_prob_cases, columns = ['Variable', 'Country', '% Value', 'Absolute values']))
+            else:
+                st.table(pd.DataFrame(list_prob_cases, columns = ['Variable', 'Country', 'Category', '% Value', 'Absolute values']))
+            
+            dict_trend = {'Strong decrease': [], 'Weak decrease': [], 'Undetermined trend': [], 'Weak increase': [], 'Strong increase': []}; set_trend = set()
+            for inst in dict_check_flags:
+                class_tr = int(table[table[con_checks_id_col] == inst]['Class trend'].unique()[0])
+                if class_tr != 0:
+                    dict_trend[list(dict_trend.keys())[class_tr-1]].append(inst)
+                    if class_tr == 1 or class_tr == 3 or class_tr == 5:
+                        set_trend.add(inst)
+            trend_table = pd.DataFrame([len(v) for v in dict_trend.values()], index = dict_trend.keys(), columns = ['Number of institutions'])
+            
+            st.table(trend_table)
+            if flag_radio == 'Yes':
+                if flag_notes_on:
+                    summ_table = pd.DataFrame([[str(len(twos.intersection(set_trend))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(set_trend))) / len(twos), 2)) + '%'], 
+                                               [str(len(set_trend)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(set_trend) / len(ones.union(twos))), 2)) + '%'], 
+                                               [str(len(set_trend.difference(ones.union(twos)))), str(round((100 * len(set_trend.difference(ones.union(twos)))) / len(set_trend), 2)) + '%']], 
+                                               columns = ['Absolute Values', 'In percentage'], 
+                                               index = ['Accuracy', 'new/prev cases', 'Extra cases'])
+                else:
+                    summ_table = pd.DataFrame([[str(len(ones.intersection(set_trend))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(set_trend))) / len(ones), 2)) + '%'], 
+                                               [str(len(set_trend)) + ' / ' + str(len(ones)), str(round(100 * (len(set_trend) / len(ones)), 2)) + '%'], 
+                                               [str(len(set_trend.difference(ones))), str(round((100 * len(set_trend.difference(ones))) / len(set_trend), 2)) + '%']], 
+                                               columns = ['Absolute Values', 'In percentage'], 
+                                               index = ['Accuracy', 'new/prev cases', 'Extra cases'])
+                st.table(summ_table)
+            
+            trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
+            trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
+            line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_features, 'Reference year']], x = 'Reference year', y = con_checks_features)
+            line_trend_ch_inst.update_yaxes(range = [0, max(table[table[con_checks_id_col] == trend_inst][con_checks_features].values) + (.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_features].values))])
+            st.plotly_chart(line_trend_ch_inst, use_container_width=True)
+            
+            st.write('To download the results select a time variable and then click the Download data button')
+            left1, right1 = st.columns(2)
+            with left1:
+                time_col = st.selectbox("Time variable:", table.columns)
+            with right1:
+                descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
+
+            t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
+            if flag_radio == 'Yes':
+                df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Existing flag', 'Detected case', 'Rupt. years']
+            else:
+                df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Detected case', 'Rupt. years']
+            for inst in sorted(list(table[con_checks_id_col].unique())):
+                df_inst = table[table[con_checks_id_col] == inst]
+                list_el = [inst]
+                for col in descr_col:
+                    list_el.append(df_inst[col].unique()[0])
+                for t in t_col:
+                    if df_inst[df_inst[time_col] == int(t)].shape[0] != 0:
+                        list_el.append(df_inst[df_inst[time_col] == int(t)][con_checks_features].values[0])
+                    else:
+                        list_el.append(np.nan)
+                list_el.append(con_checks_features)
+                if df_inst['Class trend'].unique()[0] == 0:
+                    list_el.append('Impossible to calculate')
+                else:
+                    list_el.append(list(dict_trend.keys())[df_inst['Class trend'].unique()[0]-1])
+                if flag_radio == 'Yes':
+                    if notes_col != '-':
+                        if (inst not in ones) and (inst not in twos):
+                            list_el.append(0)
+                        if inst in ones:
+                            list_el.append(1)
+                        if inst in twos:
+                            list_el.append(2)
+                    else:
+                        if inst not in ones:
+                            list_el.append(0)
+                        else:
+                            list_el.append(1)
+                list_el.append(df_inst['Prob inst ' + con_checks_features].unique()[0])
+                list_el.append(df_inst['Rupt. years'].unique()[0])
+                list_fin.append(list_el)
+            table_download = pd.DataFrame(list_fin, columns = df_cols)
+            st.download_button(label = "Download data with lables", data = table_download.to_csv(index = None, sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
+           
