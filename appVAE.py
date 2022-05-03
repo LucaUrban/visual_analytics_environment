@@ -482,72 +482,75 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         with right:
             id_sel = st.selectbox("Index/category selection:", ['All ids'] + list(table[id_sel_col].unique()), 0)
         
-        scaler = StandardScaler()
-        if id_sel == 'All ids':
-            target = table[feaImp_target]
-            train_nm = table[fea_Imp_features]
+        if len(fea_Imp_features) >= 2:
+            scaler = StandardScaler()
+            if id_sel == 'All ids':
+                target = table[feaImp_target]
+                train_nm = table[fea_Imp_features]
+            else:
+                target = table[table[id_sel_col] == id_sel][feaImp_target]
+                train_nm = table[table[id_sel_col] == id_sel][fea_Imp_features]
+
+            for name_col in fea_Imp_features:
+                train_nm[name_col].replace({np.nan : train_nm[name_col].mean()}, inplace = True)
+            train_nm = scaler.fit_transform(train_nm)
+
+            target.replace({np.nan : 0}, inplace = True)
+
+            Alpha = [.1, 1, 10, 100]; titles = tuple("Feature importance for alpha = " + str(alpha) for alpha in Alpha)
+            Alpha = [[.1, 1], [10, 100]]
+
+            # Create figure with secondary y-axis
+            fig_tot = make_subplots(rows = 2, cols = 2, 
+                                    specs = [[{"secondary_y": True}, {"secondary_y": True}], 
+                                             [{"secondary_y": True}, {"secondary_y": True}]], 
+                                    subplot_titles = titles)
+
+            for num_row in range(2):
+                for num_col in range(2):
+                    clf = Ridge(alpha = Alpha[num_row][num_col])
+                    clf.fit(train_nm, target)
+
+                    importance = clf.coef_
+                    for i in range(len(importance)):
+                        if importance[i] < 0:
+                            importance[i] *= -1
+                    dict_fin = {fea_Imp_features[i]: importance[i] for i in range(importance.shape[0])}
+                    dict_fin = {k: v for k, v in sorted(dict_fin.items(), key=lambda item: item[1], reverse = True)}
+                    dict_fin_per = {fea_Imp_features[i]: (importance[i] / np.sum(importance)) * 100 for i in range(importance.shape[0])}
+                    dict_fin_per = {k: v for k, v in sorted(dict_fin_per.items(), key=lambda item: item[1], reverse = True)}
+                    lis_final = []; res_par = 0
+                    for value in dict_fin_per.values():
+                        res_par += value; lis_final.append(res_par)
+
+                    fig_tot.add_trace(
+                        go.Bar(x = list(dict_fin_per.keys()), y = list(dict_fin_per.values()), 
+                               marker_color = 'rgb(158,202,225)', marker_line_color = 'rgb(8,48,107)', 
+                               marker_line_width = 1.5, opacity = 0.6, name = 'Value'),
+                        row = num_row + 1, col = num_col + 1, secondary_y = False
+                    )
+
+                    fig_tot.add_trace(
+                        go.Scatter(x = list(dict_fin_per.keys()), y = lis_final, line_color = 'rgb(255, 150, 0)'),
+                        row = num_row + 1, col = num_col + 1, secondary_y = True
+                    )
+
+                    # Add figure title
+                    fig_tot.update_layout(
+                        title_text = "Feature importances", showlegend = False
+                    )
+
+                    # Set x-axis title
+                    fig_tot.update_xaxes(title_text = "Variables")
+
+                    # Set y-axes titles
+                    fig_tot.update_yaxes(title_text="<b>Value</b> of importance", secondary_y=False)
+                    fig_tot.update_yaxes(title_text="<b>%</b> of importance", secondary_y=True)
+
+            fig_tot.update_layout(height = 600)
+            st.plotly_chart(fig_tot, use_container_width=True)
         else:
-            target = table[table[id_sel_col] == id_sel][feaImp_target]
-            train_nm = table[table[id_sel_col] == id_sel][fea_Imp_features]
-
-        for name_col in fea_Imp_features:
-            train_nm[name_col].replace({np.nan : train_nm[name_col].mean()}, inplace = True)
-        train_nm = scaler.fit_transform(train_nm)
-
-        target.replace({np.nan : 0}, inplace = True)
-
-        Alpha = [.1, 1, 10, 100]; titles = tuple("Feature importance for alpha = " + str(alpha) for alpha in Alpha)
-        Alpha = [[.1, 1], [10, 100]]
-
-        # Create figure with secondary y-axis
-        fig_tot = make_subplots(rows = 2, cols = 2, 
-                                specs = [[{"secondary_y": True}, {"secondary_y": True}], 
-                                         [{"secondary_y": True}, {"secondary_y": True}]], 
-                                subplot_titles = titles)
-
-        for num_row in range(2):
-            for num_col in range(2):
-                clf = Ridge(alpha = Alpha[num_row][num_col])
-                clf.fit(train_nm, target)
-
-                importance = clf.coef_
-                for i in range(len(importance)):
-                    if importance[i] < 0:
-                        importance[i] *= -1
-                dict_fin = {fea_Imp_features[i]: importance[i] for i in range(importance.shape[0])}
-                dict_fin = {k: v for k, v in sorted(dict_fin.items(), key=lambda item: item[1], reverse = True)}
-                dict_fin_per = {fea_Imp_features[i]: (importance[i] / np.sum(importance)) * 100 for i in range(importance.shape[0])}
-                dict_fin_per = {k: v for k, v in sorted(dict_fin_per.items(), key=lambda item: item[1], reverse = True)}
-                lis_final = []; res_par = 0
-                for value in dict_fin_per.values():
-                    res_par += value; lis_final.append(res_par)
-
-                fig_tot.add_trace(
-                    go.Bar(x = list(dict_fin_per.keys()), y = list(dict_fin_per.values()), 
-                           marker_color = 'rgb(158,202,225)', marker_line_color = 'rgb(8,48,107)', 
-                           marker_line_width = 1.5, opacity = 0.6, name = 'Value'),
-                    row = num_row + 1, col = num_col + 1, secondary_y = False
-                )
-
-                fig_tot.add_trace(
-                    go.Scatter(x = list(dict_fin_per.keys()), y = lis_final, line_color = 'rgb(255, 150, 0)'),
-                    row = num_row + 1, col = num_col + 1, secondary_y = True
-                )
-
-                # Add figure title
-                fig_tot.update_layout(
-                    title_text = "Feature importances", showlegend = False
-                )
-
-                # Set x-axis title
-                fig_tot.update_xaxes(title_text = "Variables")
-
-                # Set y-axes titles
-                fig_tot.update_yaxes(title_text="<b>Value</b> of importance", secondary_y=False)
-                fig_tot.update_yaxes(title_text="<b>%</b> of importance", secondary_y=True)
-
-        fig_tot.update_layout(height = 600)
-        st.plotly_chart(fig_tot, use_container_width=True)
+            st.warning("Yuo have to choose at least two columns")
         
     if widget == "Anomalies check":
         use_col = st.sidebar.selectbox("Chosen Variable", col_mul, 0)
