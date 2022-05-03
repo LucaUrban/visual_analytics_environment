@@ -73,6 +73,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
     # selection boxes columns
     col_an = [col for col in list(table) if len(table[col].unique()) < 10 or is_numeric_dtype(table[col])]
+    col_obj = [col for col in list(table) if table[col].dtypes == 'O']
     col_mul = [col for col in list(table) if is_numeric_dtype(table[col])]
     lis_check = [{'label': col, 'value': col} for col in col_mul if col != col_mul[0]]
 
@@ -88,7 +89,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
     if widget == "Geographical Analysis":
         # map-box part
         st.sidebar.subheader("Map area")
-        nut_col = st.sidebar.selectbox("Nut column", table.columns, 0)
+        nut_col = st.sidebar.selectbox("Nut column", col_obj, 0)
         map_feature = st.sidebar.selectbox("Feature column", col_mul, 0)
         map_q = st.sidebar.number_input("Quantile value", 0, 100, 50)
 
@@ -168,7 +169,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
         use_col = st.sidebar.selectbox("Chosen Variable", col_mul, 0)
         modality = st.sidebar.selectbox("Forecasting Method", ["Rolling Forecast", "Recurring Forecast"], 0)
-        index = st.sidebar.selectbox("Index col", table.columns, 0)
+        index = st.sidebar.selectbox("Index col", col_obj, 0)
         time = st.sidebar.selectbox("Time col", table.columns, 0)
  
         # pre-work
@@ -271,9 +272,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         # map pplot + violin plot on the aggregated results
         left, right = st.columns(2)
         with left: 
-            ratio_vio_sel1 = st.selectbox("First category col (or nut id col)", table.columns, 0)
+            ratio_vio_sel1 = st.selectbox("First category col (or nut id col)", col_obj, 0)
         with right:
-            ratio_vio_sel2 = st.selectbox("Second category column", ['-'] + list(table.columns), 0)
+            ratio_vio_sel2 = st.selectbox("Second category column", ['-'] + col_obj, 0)
         
         res = {ratio_vio_sel1: table[ratio_vio_sel1].unique(), new_ratio_name: []}
         for nut_id in res[ratio_vio_sel1]:
@@ -341,7 +342,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         st.header("Multi-dimension Analysis")
 
         st.sidebar.subheader("Multivariable Area")
-        multi_index = st.sidebar.selectbox("Multivariable index col", table.columns, 1)
+        multi_index = st.sidebar.selectbox("Multivariable index col", col_obj, 1)
         multi_time = st.sidebar.selectbox("Multivariable time col", ['-'] + list(table.columns), 3)
         multiXax_col = st.sidebar.selectbox("Multivariable X axis col", col_mul, 1)
         multiYax_col = st.sidebar.selectbox("Multivariable Y axis col", col_mul, 2)
@@ -405,7 +406,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         st.header("Autocorrelation Analysis")
 
         st.sidebar.subheader("Autocorrelation Area")
-        cross_index = st.sidebar.selectbox("Autocorrelation index col", table.columns, 1)
+        cross_index = st.sidebar.selectbox("Autocorrelation index col", col_obj, 1)
         cross_time = st.sidebar.selectbox("Autocorrelation time col", table.columns, 3)
         cross_col = st.sidebar.selectbox("Autocorrelation X axis col", col_mul, 1)
         crossSlider = st.sidebar.slider("Autocorrelation time value", int(table[cross_time].min()), int(table[cross_time].max()-1), int(table[cross_time].min()))
@@ -469,7 +470,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         # pareto chart with feature importance on ridge regressor
         st.sidebar.subheader("Feature Importance Area")
         feaImp_target = st.sidebar.selectbox("Feature Importance target", col_mul, 1)
-        id_sel_col = st.sidebar.selectbox("ID/category column", table.columns, 2)
+        id_sel_col = st.sidebar.selectbox("ID/category column", col_obj, 2)
 
         st.header("Feature Importance Analysis")
         
@@ -656,7 +657,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         # a more specific view of the ouliers by country or generic id and type
         left, right = st.columns(2)
         with left: 
-            out_id_col = st.selectbox("Outlier index col", table.columns, 0)
+            out_id_col = st.selectbox("Outlier index col", col_obj, 0)
         with right:
             out_type = st.selectbox("Outlier type", ['All', 'Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers'], 0)
         
@@ -755,9 +756,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
     if widget == "Consistency checks":
         methodology = st.sidebar.selectbox("Analysis to apply", ['Multiannual analysis', 'Ratio analysis'], 0)
         if methodology == 'Ratio analysis':
-            con_checks_id_col = st.sidebar.selectbox("Index col", table.columns, 0)
-            country_sel_col = st.sidebar.selectbox("Country col", ['-'] + list(table.columns), 0)
-            cat_sel_col = st.sidebar.selectbox("Category col", ['-'] + list(table.columns), 0)
+            con_checks_id_col = st.sidebar.selectbox("Index col", col_obj, 0)
+            country_sel_col = st.sidebar.selectbox("Country col", ['-'] + col_obj, 0)
+            cat_sel_col = st.sidebar.selectbox("Category col", ['-'] + col_obj, 0)
             flag_issue_quantile = st.sidebar.number_input("Flags quantile (S2 and S3)", 0.0, 30.0, 5.0, 0.1)
             prob_cases_per = st.sidebar.number_input("Percentage problematic cases", 0.0, 100.0, 20.0)
             p_value_trend_per = st.sidebar.number_input("P-value percentage trend estimation", 5.0, 50.0, 10.0)
@@ -971,9 +972,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             else:
                 st.warning('you have to choose a value for the field "Category selection column".')
         else:
-            con_checks_id_col = st.sidebar.selectbox("Index col", table.columns, 0)
-            country_sel_col = st.sidebar.selectbox("Country col", ['-'] + list(table.columns), 0)
-            cat_sel_col = st.sidebar.selectbox("Category col", ['-'] + list(table.columns), 0)
+            con_checks_id_col = st.sidebar.selectbox("Index col", col_obj, 0)
+            country_sel_col = st.sidebar.selectbox("Country col", ['-'] + col_obj, 0)
+            cat_sel_col = st.sidebar.selectbox("Category col", ['-'] + col_obj, 0)
             retain_quantile = st.sidebar.number_input("Quantile to exclude from the calculation (S1)", 1.0, 10.0, 2.0, 0.1)
             flag_issue_quantile = st.sidebar.number_input("Flags quantile (S2 and S3)", 35.0, 100.0, 95.0, 0.1)
             prob_cases_per = st.sidebar.number_input("Percentage problematic cases", 0.0, 100.0, 20.0)
