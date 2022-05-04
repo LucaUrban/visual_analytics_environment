@@ -1062,7 +1062,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             if cat_sel_col == '-':
                 DV_fin_res = np.append(DV_fin_res, np.array([np.sum(DV_fin_res, axis = 1)]), axis = 1)
                 DV_fin_res = np.append(DV_fin_res, DV_fin_res, axis = 0)
-                list_fin_res = DV_fin_res.tolist(); st.write(list_fin_res)
+                list_fin_res = DV_fin_res.tolist()
                 for row in range(len(list_fin_res)):
                     for i in range(len(list_fin_res[row])):
                         if i != len(list_fin_res[row])-1:
