@@ -1060,7 +1060,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             table.loc[table[table[con_checks_id_col].isin(dict_check_flags)].index, 'Prob inst ' + con_checks_features] = 1
                         
             if cat_sel_col == '-':
-                DV_fin_res = np.append(DV_fin_res, np.array([np.sum(DV_fin_res, axis = 0)]), axis = 0)
+                DV_fin_res = np.append(DV_fin_res, np.array([np.sum(DV_fin_res, axis = 1)]), axis = 1)
+                DV_fin_res = np.append(DV_fin_res, DV_fin_res, axis = 0)
                 list_fin_res = DV_fin_res.tolist(); st.write(list_fin_res)
                 for row in range(len(list_fin_res)):
                     for i in range(len(list_fin_res[row])):
