@@ -255,7 +255,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
         table.loc[table[table[new_ratio_name] == np.inf].index, new_ratio_name] = np.nan
          
-         ratio_plot = go.Figure(go.Indicator(
+        ratio_plot = go.Figure(go.Indicator(
             mode = "gauge+number+delta",
             value = table[new_ratio_name].mean(),
             delta = {"reference": 2 * table[new_ratio_name].mean() - table[new_ratio_name].quantile(0.95)},
