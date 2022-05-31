@@ -1012,7 +1012,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                             table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
             
             indices = table[[con_checks_id_col, con_checks_features]].groupby([con_checks_id_col]).prod(min_count = 1)
-            indices = geo_mean.pow(1 / pd.DataFrame(table[con_checks_features].groupby(table[con_checks_id_col]).count().values, index = geo_mean.index, columns = [con_checks_features]))
+            indices = geo_mean.pow(1 / pd.DataFrame(table[con_checks_features].groupby(table[con_checks_id_col]).count().values, index = indices.index, columns = [con_checks_features]))
             indices.drop(index = set(indices[(pd.isna(indices[con_checks_features])) | (indices[con_checks_features] <= indices.quantile(retain_quantile/100).values[0])].index), axis = 0, inplace = True)
 
             res = dict(); list_prob_cases = []
