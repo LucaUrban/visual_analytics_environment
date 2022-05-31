@@ -1033,7 +1033,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     table['New Country Code'] = table[country_sel_col].str[:2]
                     country_sel_col = 'New Country Code'
                     break
-            list_countries = list(table[country_sel_col].unique())
+            list_countries = list(table[country_sel_col].unique()); list_prob_cases = []
              
             if cat_sel_col == '-':
                 DV_fin_res = np.zeros((1, len(list_countries)), dtype = int)
