@@ -1015,27 +1015,17 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             indices = indices.pow(1 / pd.DataFrame(table[con_checks_features].groupby(table[con_checks_id_col]).count().values, index = indices.index, columns = [con_checks_features]))
             indices.drop(index = set(indices[(pd.isna(indices[con_checks_features])) | (indices[con_checks_features] <= indices.quantile(retain_quantile/100).values[0])].index), axis = 0, inplace = True)
 
-            res = dict(); list_prob_cases = []
-            # does the calculation with the delta+ and delta-minus for the multiannual checks and stores it into a dictionary 
-            for id_inst in indices.index.values:
-                inst = table[(table[con_checks_id_col] == id_inst) & (-pd.isna(table[con_checks_features]))][con_checks_features].values
-                num_row = len(inst); delta_pos = list(); delta_neg = list()
-                for i in range(1, num_row):
-                    if inst[num_row - i - 1] - inst[num_row - i] < 0:
-                        delta_neg.append(round(inst[num_row - i - 1] - inst[num_row - i], 2))
-                    else:
-                        delta_pos.append(round(inst[num_row - i - 1] - inst[num_row - i], 2))
-                res[id_inst] = [delta_pos, delta_neg]
-
-            DV = dict() # the dictionary in wich we'll store all the DV and further the DM values for the variability from years
-            for key, value in res.items():
-                res_par = 0
-                if len(value[0]) != 0 and len(value[1]) != 0:
-                    res_par = sum(value[0]) * sum(value[1])
-                DV[key] = round(math.fabs(res_par)/indices[con_checks_features][key] ** 1.5, 3)
-
-                DV_df = pd.DataFrame(DV.values(), index = DV.keys(), columns = [con_checks_features])
-                dict_check_flags = set(DV_df[DV_df[con_checks_features] >= DV_df[con_checks_features].quantile(flag_issue_quantile/100)].index)
+            t_pr = table[[con_checks_id_col, 'Reference year', con_checks_features]].sort_values([con_checks_id_col, 'Reference year']).dropna().reset_index(drop = True)
+            t_pr_diff = t_pr[con_checks_features].diff()
+            t_pr_diff.loc[[0] + list(np.cumsum(t_pr[con_checks_features].groupby(t_pr[con_checks_id_col]).count().values)[:-1])] = 0
+            t_pr['Diff ' + con_checks_features] = t_pr_diff
+            t_diff_fin = t_pr.groupby(con_checks_id_col).agg({'Diff ' + con_checks_features: ['min', 'max']})
+            for ind in ind_drop:
+                if ind in t_diff_fin.index:
+                    t_diff_fin.drop(index = ind, axis = 0, inplace = True)
+            t_diff_fin['DV norm'] = abs(t_diff_fin['Diff ' + con_checks_features]['min'] * t_diff_fin['Diff ' + con_checks_features]['max']) / (indices[con_checks_features] ** 1.5)
+            t_diff_fin.drop(index = t_diff_fin[t_diff_fin['DV norm'] == 0].index, axis = 0, inplace = True)
+            dict_check_flags = set(t_diff_fin[t_diff_fin['DV norm'] >= t_diff_fin['DV norm'].quantile(flag_issue_quantile/100)].index)
 
             for el in table[country_sel_col].unique():
                 if len(el) > 2:
