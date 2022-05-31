@@ -992,13 +992,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 
             res_ind = dict(); table['Class trend'] = 0; table['Rupt. years'] = ''
             for id_inst in table[con_checks_id_col].unique():
-                # calculations of the geometric mean
                 inst = table[table[con_checks_id_col] == id_inst][con_checks_features].values[::-1]
                 geo_mean_vec = np.delete(inst, np.where((inst == 0) | (np.isnan(inst))))
-                if geo_mean_vec.shape[0] != 0:
-                    res_ind[id_inst] = math.pow(math.fabs(np.prod(geo_mean_vec)), 1/geo_mean_vec.shape[0])
-                else:
-                    res_ind[id_inst] = np.nan
                     
                 # trend classification
                 if geo_mean_vec.shape[0] > 3:
@@ -1016,7 +1011,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                         if p > p_value_trend_per/100:
                             table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
             
-            indices = pd.DataFrame(res_ind.values(), index = res_ind.keys(), columns = [con_checks_features])
+            indices = table[[con_checks_id_col, con_checks_features]].groupby([con_checks_id_col]).prod(min_count = 1)
+            indices = geo_mean.pow(1 / pd.DataFrame(table[con_checks_features].groupby(table[con_checks_id_col]).count().values, index = geo_mean.index, columns = [con_checks_features]))
             indices.drop(index = set(indices[(pd.isna(indices[con_checks_features])) | (indices[con_checks_features] <= indices.quantile(retain_quantile/100).values[0])].index), axis = 0, inplace = True)
 
             res = dict(); list_prob_cases = []
