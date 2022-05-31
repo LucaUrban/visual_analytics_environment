@@ -1013,7 +1013,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             
             indices = table[[con_checks_id_col, con_checks_features]].groupby([con_checks_id_col]).prod(min_count = 1)
             indices = indices.pow(1 / pd.DataFrame(table[con_checks_features].groupby(table[con_checks_id_col]).count().values, index = indices.index, columns = [con_checks_features]))
-            indices.drop(index = set(indices[(pd.isna(indices[con_checks_features])) | (indices[con_checks_features] <= indices.quantile(retain_quantile/100).values[0])].index), axis = 0, inplace = True)
+            ind_drop = set(indices[(pd.isna(indices[con_checks_features])) | (indices[con_checks_features] <= indices.quantile(2/100).values[0])].index)
+            indices.drop(index = ind_drop, axis = 0, inplace = True)
 
             t_pr = table[[con_checks_id_col, 'Reference year', con_checks_features]].sort_values([con_checks_id_col, 'Reference year']).dropna().reset_index(drop = True)
             t_pr_diff = t_pr[con_checks_features].diff()
