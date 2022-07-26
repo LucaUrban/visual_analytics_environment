@@ -1083,6 +1083,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             else:
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
+                DV_fin_res = np.delete(DV_fin_res, np.where(DV_fin_res[len(list_un_cat), :] == 0), 1)
                 list_fin_res = DV_fin_res.tolist()
                 for row in range(len(list_fin_res)):
                     for i in range(len(list_fin_res[row])):
