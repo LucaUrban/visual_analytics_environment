@@ -319,7 +319,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     st.plotly_chart(map_box, use_container_width=True); break
 
         cou_sel = st.selectbox("Id to explore", ['All ids'] + list(table[ratio_vio_sel1].unique()), 0)
-        st.write(len(table[ratio_num])); st.write(len(table[ratio_den]))
         if cou_sel == 'All ids':
             if ratio_vio_sel2 == '-':
                 fig_vio = px.violin(table, y = new_ratio_name, box = True, points = 'suspectedoutliers', title = 'Violin plot for the created ratio', 
