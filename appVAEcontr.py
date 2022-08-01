@@ -14,7 +14,8 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 from plotly.colors import n_colors
 from sklearn.linear_model import Ridge, LinearRegression
-from sklearn import preprocessing
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import normalize
 from sklearn.metrics import mean_squared_error
 from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.arima.model import ARIMA
