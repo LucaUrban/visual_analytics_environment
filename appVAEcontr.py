@@ -510,7 +510,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
                     importance = softmax(clf.coef_)
                     dict_soft = {fea_Imp_features[i]: importance[i] for i in range(importance.shape[0])}
-                    dict_soft = {k: v for k, v in sorted(dict_fin.items(), key=lambda item: item[1], reverse = True)}
+                    dict_soft = {k: v for k, v in sorted(dict_soft.items(), key=lambda item: item[1], reverse = True)}
                     lis_final = []; res_par = 0
                     for value in dict_soft.values():
                         res_par += value; lis_final.append(res_par)
