@@ -769,6 +769,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 with right1:
                     ratio_den = st.selectbox("Denominator column", col_mul)
                 table = pd.concat([table, pd.DataFrame(np.divide(table[ratio_num].values, table[ratio_den].values), columns = [con_checks_feature])], axis = 1)
+                table.loc[table[table[ncon_checks_feature] == np.inf].index, con_checks_feature] = np.nan
             flag_radio = st.radio("Do you want to use the flags:", ('Yes', 'No'))
             if flag_radio == 'Yes':
                 left1, right1 = st.columns(2)
