@@ -1058,7 +1058,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                         
             if cat_sel_col == '-':
                 DV_fin_res = np.append(DV_fin_res, np.array([np.sum(DV_fin_res, axis = 1)]), axis = 1)
-                cou_0_cases = np.where(DV_fin_res[1, :] == 0)
+                cou_0_cases = np.where(DV_fin_res[0, :] == 0)
                 DV_fin_res = np.delete(DV_fin_res, cou_0_cases, 1)
                 list_countries = [i for j, i in enumerate(list_countries) if j not in cou_0_cases[0]]
                 DV_fin_res = np.append(DV_fin_res, DV_fin_res, axis = 0)
