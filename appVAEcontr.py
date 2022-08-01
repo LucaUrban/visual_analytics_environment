@@ -327,7 +327,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             else:
                 table[ratio_vio_sel2].replace({np.nan: 'missing'}, inplace = True)
                 fig_vio = px.violin(table, y = new_ratio_name, color = table[ratio_vio_sel2], box = True, points = 'suspectedoutliers', 
-                                    title = 'Violin plot for the created ratio', hover_data = [ratio_vio_sel1, ratio_num])
+                                    title = 'Violin plot for the created ratio', hover_data = [ratio_vio_sel1, 'Total Current expenditure (PPP)'])
         else:
             if ratio_vio_sel2 == '-':
                 fig_vio = px.violin(table[table[ratio_vio_sel1] == cou_sel], y = new_ratio_name, x = ratio_vio_sel1, box = True, points = 'suspectedoutliers', 
