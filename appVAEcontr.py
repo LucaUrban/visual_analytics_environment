@@ -323,19 +323,19 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         if cou_sel == 'All ids':
             if ratio_vio_sel2 == '-':
                 fig_vio = px.violin(table, y = new_ratio_name, box = True, points = 'suspectedoutliers', title = 'Violin plot for the created ratio', 
-                                    hover_data = [ratio_vio_sel1, ratio_num])
+                                    hover_data = [ratio_vio_sel1, ratio_num[0], ratio_den[0]])
             else:
                 table[ratio_vio_sel2].replace({np.nan: 'missing'}, inplace = True)
                 fig_vio = px.violin(table, y = new_ratio_name, color = table[ratio_vio_sel2], box = True, points = 'suspectedoutliers', 
-                                    title = 'Violin plot for the created ratio', hover_data = [ratio_vio_sel1, ratio_num[0]])
+                                    title = 'Violin plot for the created ratio', hover_data = [ratio_vio_sel1, ratio_num[0], ratio_den[0]])
         else:
             if ratio_vio_sel2 == '-':
                 fig_vio = px.violin(table[table[ratio_vio_sel1] == cou_sel], y = new_ratio_name, x = ratio_vio_sel1, box = True, points = 'suspectedoutliers', 
-                                    title = 'Violin plot for the created ratio', hover_data = [ratio_vio_sel1, ratio_num])
+                                    title = 'Violin plot for the created ratio', hover_data = [ratio_vio_sel1, ratio_num[0], ratio_den[0]])
             else:
                 table[ratio_vio_sel2].replace({np.nan: 'missing'}, inplace = True)
                 fig_vio = px.violin(table[table[ratio_vio_sel1] == cou_sel], y = new_ratio_name, x = ratio_vio_sel1, color = table[table[ratio_vio_sel1] == cou_sel][ratio_vio_sel2], 
-                                    box = True, points = 'suspectedoutliers', title = 'Violin plot for the created ratio', hover_data = [ratio_vio_sel1, ratio_num])
+                                    box = True, points = 'suspectedoutliers', title = 'Violin plot for the created ratio', hover_data = [ratio_vio_sel1, ratio_num[0], ratio_den[0]])
         st.plotly_chart(fig_vio, use_container_width=True)
 
         st.write('If you want to download the result file with the new ratio clik on the following button:')
