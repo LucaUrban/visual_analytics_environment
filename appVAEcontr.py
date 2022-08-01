@@ -509,8 +509,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     clf = Ridge(alpha = Alpha[num_row][num_col])
                     clf.fit(train_nm, target)
 
-                    importance = softmax(normalize([clf.coef_]))
-                    dict_soft = {fea_Imp_features[i]: importance[0][i]*100 for i in range(importance.shape[0])}
+                    importance = softmax(normalize([clf.coef_]))[0]
+                    dict_soft = {fea_Imp_features[i]: importance[i]*100 for i in range(importance.shape[0])}
                     dict_soft = {k: v for k, v in sorted(dict_soft.items(), key=lambda item: item[1], reverse = True)}
                     st.write(dict_soft)
                     lis_final = []; res_par = 0
