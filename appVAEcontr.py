@@ -21,6 +21,7 @@ from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.stats.stattools import medcouple
 import math
 import scipy.stats as stats
+from scipy.special import softmax
 import pymannkendall as mk
 import csv
 
@@ -507,27 +508,22 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     clf = Ridge(alpha = Alpha[num_row][num_col])
                     clf.fit(train_nm, target)
 
-                    importance = clf.coef_
-                    for i in range(len(importance)):
-                        if importance[i] < 0:
-                            importance[i] *= -1
-                    dict_fin = {fea_Imp_features[i]: importance[i] for i in range(importance.shape[0])}
-                    dict_fin = {k: v for k, v in sorted(dict_fin.items(), key=lambda item: item[1], reverse = True)}
-                    dict_fin_per = {fea_Imp_features[i]: (importance[i] / np.sum(importance)) * 100 for i in range(importance.shape[0])}
-                    dict_fin_per = {k: v for k, v in sorted(dict_fin_per.items(), key=lambda item: item[1], reverse = True)}
+                    importance = softmax(clf.coef_)
+                    dict_soft = {fea_Imp_features[i]: importance[i] for i in range(importance.shape[0])}
+                    dict_soft = {k: v for k, v in sorted(dict_fin.items(), key=lambda item: item[1], reverse = True)}
                     lis_final = []; res_par = 0
-                    for value in dict_fin_per.values():
+                    for value in dict_soft.values():
                         res_par += value; lis_final.append(res_par)
 
                     fig_tot.add_trace(
-                        go.Bar(x = list(dict_fin_per.keys()), y = list(dict_fin_per.values()), 
+                        go.Bar(x = list(dict_soft.keys()), y = list(dict_soft.values()), 
                                marker_color = 'rgb(158,202,225)', marker_line_color = 'rgb(8,48,107)', 
                                marker_line_width = 1.5, opacity = 0.6, name = 'Value'),
                         row = num_row + 1, col = num_col + 1, secondary_y = False
                     )
 
                     fig_tot.add_trace(
-                        go.Scatter(x = list(dict_fin_per.keys()), y = lis_final, line_color = 'rgb(255, 150, 0)'),
+                        go.Scatter(x = list(dict_soft.keys()), y = lis_final, line_color = 'rgb(255, 150, 0)'),
                         row = num_row + 1, col = num_col + 1, secondary_y = True
                     )
 
