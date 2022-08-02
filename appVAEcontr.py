@@ -828,14 +828,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
                 # table reporting the cases by countries
                 DV_fin_res = np.zeros((len(categories), len(countries)), dtype = int)
-                for j in range(len(countries)):
-                    for el in dict_flags[con_checks_feature][countries[j]]:
-                        DV_fin_res[categories.index(table[table[con_checks_id_col] == el][cat_sel_col].unique()[0]), j] += 1
-                for j in range(len(categories)):
-                    for el in dict_flags[con_checks_feature][categories[j]]:
-                        if el not in dict_flags[con_checks_feature][countries[countries.index(el[:2])]]:
-                            DV_fin_res[j, countries.index(el[:2])] += 1
-
+                for el in set_app:
+                    DV_fin_res[table[table[con_checks_id_col] == el][country_sel_col].unique()[0], table[table[con_checks_id_col] == el][cat_sel_col].unique()[0]] += 1
+                    
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 1).reshape((len(categories), 1)), axis = 1)
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 0).reshape(1, len(countries) + 1), axis = 0)
                 cou_0_cases = np.where(DV_fin_res[len(categories), :] == 0)
