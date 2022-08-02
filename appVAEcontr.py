@@ -769,10 +769,10 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 with right1:
                     ratio_den = st.multiselect("Denominator column", col_mul)
                 if len(ratio_num) == 1 and len(ratio_den) == 1:
-                    table = pd.concat([table, pd.DataFrame(np.divide(table[ratio_num].values, table[ratio_den].values), columns = [new_ratio_name])], axis = 1)
+                    table = pd.concat([table, pd.DataFrame(np.divide(table[ratio_num].values, table[ratio_den].values), columns = [con_checks_feature])], axis = 1)
                 else:
-                    table = pd.concat([table, pd.DataFrame(np.divide(np.nansum(table[ratio_num].values, axis = 1), np.nansum(table[ratio_den].values, axis = 1)), columns = [new_ratio_name])], axis = 1)
-                table.loc[table[table[new_ratio_name] == np.inf].index, new_ratio_name] = np.nan
+                    table = pd.concat([table, pd.DataFrame(np.divide(np.nansum(table[ratio_num].values, axis = 1), np.nansum(table[ratio_den].values, axis = 1)), columns = [con_checks_feature])], axis = 1)
+                table.loc[table[table[con_checks_feature] == np.inf].index, con_checks_feature] = np.nan
             flag_radio = st.radio("Do you want to use the flags:", ('Yes', 'No'))
             if flag_radio == 'Yes':
                 left1, right1 = st.columns(2)
