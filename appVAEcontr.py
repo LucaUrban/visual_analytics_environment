@@ -765,11 +765,14 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 con_checks_feature = st.text_input('Write here the name of the new ratio', 'R_1')
                 left1, right1 = st.columns(2)
                 with left1:
-                    ratio_num = st.selectbox("Numerator column", col_mul)
+                    ratio_num = st.multiselect("Numerator column", col_mul)
                 with right1:
-                    ratio_den = st.selectbox("Denominator column", col_mul)
-                table = pd.concat([table, pd.DataFrame(np.divide(table[ratio_num].values, table[ratio_den].values), columns = [con_checks_feature])], axis = 1)
-                table.loc[table[table[con_checks_feature] == np.inf].index, con_checks_feature] = np.nan
+                    ratio_den = st.multiselect("Denominator column", col_mul)
+                if len(ratio_num) == 1 and len(ratio_den) == 1:
+                    table = pd.concat([table, pd.DataFrame(np.divide(table[ratio_num].values, table[ratio_den].values), columns = [new_ratio_name])], axis = 1)
+                else:
+                    table = pd.concat([table, pd.DataFrame(np.divide(np.nansum(table[ratio_num].values, axis = 1), np.nansum(table[ratio_den].values, axis = 1)), columns = [new_ratio_name])], axis = 1)
+                table.loc[table[table[new_ratio_name] == np.inf].index, new_ratio_name] = np.nan
             flag_radio = st.radio("Do you want to use the flags:", ('Yes', 'No'))
             if flag_radio == 'Yes':
                 left1, right1 = st.columns(2)
@@ -777,7 +780,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     flags_col = st.selectbox("Flag variable", table.columns)
                 with right1:
                     notes_col = st.selectbox("Notes variable", ['-'] + list(table.columns))
-            
 
             table['Class trend'] = 0
             for id_inst in table[con_checks_id_col].unique():
