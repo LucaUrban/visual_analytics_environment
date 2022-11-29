@@ -142,7 +142,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                              {'range': [table[monoVar_col].quantile(0.95), table[monoVar_col].max()], 'color': "gray"}]},
                 title = {'text': "Gauge plot for the variable: " + monoVar_col}))
         if monoVar_type == "cdf plot":
-            monoVar_plot = px.ecdf(table, x = monoVar_col, marginal="histogram")
+            monoVar_plot = px.ecdf(table, x = monoVar_col, marginal = "box")
         if monoVar_type == "pie chart":
             monoVar_plot = px.pie(table, names = monoVar_col, title = "Pie chart for the variable: " + monoVar_col)
 
