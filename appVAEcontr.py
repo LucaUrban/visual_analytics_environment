@@ -76,7 +76,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
         if len(res[nut_col][0]) == 4:
             map_box = px.choropleth_mapbox(res, geojson = eu_nut2, locations = res[nut_col], featureidkey = 'properties.id',
-                                       color = map_feature, color_continuous_scale = px.colors.cyclical.IceFire,
+                                       color = map_feature, color_continuous_scale = px.colors.diverging.Portland,
                                        range_color = (res[map_feature].min(), res[map_feature].max()),
                                        mapbox_style = "carto-positron",
                                        zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
@@ -85,7 +85,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
         if len(res[nut_col][0]) == 5:
             map_box = px.choropleth_mapbox(res, geojson = eu_nut3, locations = res[nut_col], featureidkey = 'properties.id',
-                                       color = map_feature, color_continuous_scale = px.colors.cyclical.IceFire,
+                                       color = map_feature, color_continuous_scale = px.colors.diverging.Portland,
                                        range_color = (res[map_feature].min(), res[map_feature].max()),
                                        mapbox_style = "carto-positron",
                                        zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
