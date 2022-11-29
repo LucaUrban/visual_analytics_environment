@@ -493,8 +493,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                             use_container_width=True)
         else:
             st.warning("Yuo have to choose at least two columns")
-        else:
-            st.warning("Yuo have to choose at least two columns")
         
     if widget == "Anomalies check":
         use_col = st.sidebar.selectbox("Chosen Variable", col_mul, 0)
