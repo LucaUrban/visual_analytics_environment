@@ -271,7 +271,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         try: 
             st.plotly_chart(map_creation(res, ratio_vio_sel1, new_ratio_name), use_container_width=True)
         except:
-            st.write('You have to select a NUTS id column in the selection box after \"First category col (or nut id col)\" to produce the map')
+            st.warning('You have to select a NUTS id column in the selection box after \"First category col (or nut id col)\" to produce the map')
 
         cou_sel = st.selectbox("Id to explore", ['All ids'] + list(table[ratio_vio_sel1].unique()), 0)
         if cou_sel == 'All ids':
@@ -617,7 +617,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
             except:
-                st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
+                st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
          
         if out_type == 'Strong left outliers':
             res = pd.DataFrame([[nut, df_StLeftOut[df_StLeftOut[out_id_col] == nut].shape[0]] for nut in df_StLeftOut[out_id_col].unique()], 
@@ -625,7 +625,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
             except:
-                st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
+                st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
         if out_type == 'Weak left outliers':
             res = pd.DataFrame([[nut, df_WeLeftOut[df_WeLeftOut[out_id_col] == nut].shape[0]] for nut in df_WeLeftOut[out_id_col].unique()], 
@@ -633,7 +633,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
             except:
-                st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
+                st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
         if out_type == 'Weak right outliers':
             res = pd.DataFrame([[nut, df_WeRightOut[df_WeRightOut[out_id_col] == nut].shape[0]] for nut in df_WeRightOut[out_id_col].unique()], 
@@ -641,7 +641,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
             except:
-                st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
+                st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
         if out_type == 'Strong right outliers':
             res = pd.DataFrame([[nut, df_StRightOut[df_StRightOut[out_id_col] == nut].shape[0]] for nut in df_StRightOut[out_id_col].unique()], 
@@ -649,14 +649,14 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
             except:
-                st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
+                st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
         
         out_cou = st.selectbox("Choose the specific value for the id", ['All ids'] + list(res[out_id_col]), 0)
          
         if out_cou == 'All ids': 
             st.write(df_AllOut)
         else:
-            st.write(df_AllOut) 
+            st.write(df_AllOut[df_AllOut[out_id_col] == out_cou]) 
         
     if widget == "Consistency checks":
         methodology = st.sidebar.selectbox("Analysis to apply", ['Multiannual analysis', 'Ratio analysis'], 0)
