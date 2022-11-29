@@ -100,7 +100,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
     lis_check = [{'label': col, 'value': col} for col in col_mul if col != col_mul[0]]
 
     widget = st.selectbox("what is the widget you want to display:",
-                          ["Data View", "Correlation Analysis", "Geographical Analysis", "Mono dimensional Analysis", "Ratios Analysis", "Multi-dimensional Analysis", 
+                          ["Data View", "Geographical Analysis", "Mono dimensional Analysis", "Ratios Analysis", "Multi-dimensional Analysis", 
                            "Autocorrelation Analysis", "Feature Importance Analysis", "Anomalies check", "Consistency checks", "Time series forecasting"], 0)
     
     if widget == "Data View":
@@ -145,16 +145,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             monoVar_plot = px.pie(table, names = monoVar_col, title = "Pie chart for the variable: " + monoVar_col)
 
         st.plotly_chart(monoVar_plot, use_container_width=True)
-        
-    if widget == "Correlation Analysis":
-        heat_cols = st.multiselect("Columns correlation heatmap:", col_mul)
-        
-        if len(heat_cols) >= 2:
-            fig_heat = px.imshow(table[heat_cols].corr(), x = heat_cols,  y = heat_cols, 
-                                 labels = dict(color = "Corr Value"), color_continuous_scale = px.colors.sequential.Hot)
-            st.plotly_chart(fig_heat, use_container_width=True)
-        else:
-            st.warning("Yuo have to choose at least two columns")
             
     if widget == "Time series forecasting":
         st.header("Time series forecasting")
@@ -497,6 +487,12 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             fig_tot.update_layout(height = 600)
             st.plotly_chart(fig_tot, use_container_width=True)
+                  
+            st.plotly_chart(px.imshow(table[fea_Imp_features].corr(), x = heat_cols,  y = heat_cols, labels = dict(color = "Corr Value"), 
+                                      color_continuous_scale = px.colors.sequential.Hot), 
+                            use_container_width=True)
+        else:
+            st.warning("Yuo have to choose at least two columns")
         else:
             st.warning("Yuo have to choose at least two columns")
         
