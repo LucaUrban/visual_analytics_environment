@@ -1,4 +1,4 @@
-plotly==4.14.1
+plotly==5.11.0
 Scikit-learn==0.22
 statsmodels==0.12.2
 pymannkendall==1.4.2
