@@ -264,11 +264,14 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             ratio_vio_sel1 = st.selectbox("First category col (or nut id col)", col_obj, 0)
         with right:
             ratio_vio_sel2 = st.selectbox("Second category column", ['-'] + list(col_obj), 0)
-
+            
         res = pd.DataFrame([[nut, table[table[ratio_vio_sel1] == nut][new_ratio_name].mean()] for nut in table[ratio_vio_sel1].unique()], 
                            columns = [ratio_vio_sel1, new_ratio_name])
 
-        st.plotly_chart(map_creation(res, ratio_vio_sel1, new_ratio_name), use_container_width=True)
+        try: 
+            st.plotly_chart(map_creation(res, ratio_vio_sel1, new_ratio_name), use_container_width=True)
+        except:
+            st.write('You have to select a NUTS id column in the selection box after \"First category col (or nut id col)\" to produce the map')
 
         cou_sel = st.selectbox("Id to explore", ['All ids'] + list(table[ratio_vio_sel1].unique()), 0)
         if cou_sel == 'All ids':
