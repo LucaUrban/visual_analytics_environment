@@ -128,7 +128,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
         st.sidebar.subheader("Monovariable Area")
         monoVar_col = st.sidebar.selectbox("Monovariable feature", col_an, 6)
-        monoVar_type = st.sidebar.selectbox("Chart type", ["gauge plot", "pie chart"], 0)
+        monoVar_type = st.sidebar.selectbox("Chart type", ["gauge plot", "cdf plot", "pie chart"], 0)
 
         if monoVar_type == "gauge plot":
             monoVar_plot = go.Figure(go.Indicator(
@@ -141,7 +141,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                              {'range': [table[monoVar_col].min(), table[monoVar_col].quantile(0.05)], 'color': "lightgray"},
                              {'range': [table[monoVar_col].quantile(0.95), table[monoVar_col].max()], 'color': "gray"}]},
                 title = {'text': "Gauge plot for the variable: " + monoVar_col}))
-        else:
+        if monoVar_type == "cdf plot":
+            monoVar_plot = px.ecdf(table, x = monoVar_col, marginal="histogram")
+        if monoVar_type == "pie chart":
             monoVar_plot = px.pie(table, names = monoVar_col, title = "Pie chart for the variable: " + monoVar_col)
 
         st.plotly_chart(monoVar_plot, use_container_width=True)
