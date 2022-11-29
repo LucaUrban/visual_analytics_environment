@@ -63,7 +63,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
     lis_id_eu_nut3 = [el['properties']['id'] for el in eu_nut3['features']]
 
     # functions
-    def map_creation(res, map_feature, nut_col):
+    def map_creation(res, nut_col, map_feature):
         px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
         if len(res[nut_col][0]) == 2:
             map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[nut_col], featureidkey = 'properties.ISO2',
@@ -120,7 +120,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         res = pd.DataFrame([[nut, table[table[nut_col] == nut][map_feature].quantile(map_q/100)] for nut in table[nut_col].unique()], 
                            columns = [nut_col, map_feature])
         
-        st.plotly_chart(map_creation(res, map_feature, nut_col), use_container_width=True)
+        st.plotly_chart(map_creation(res, nut_col, map_feature), use_container_width=True)
     
     if widget == "Mono dimensional Analysis":
         # mono variable analysis part
@@ -190,7 +190,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             pred_ma = np.append(pred_ma, ARIMA(res[i, 0:res.shape[1]-1], order=(0, 0, 1)).fit().predict(len(res), len(res)))
             pred_arma = np.append(pred_arma, ARIMA(res[i, 0:res.shape[1]-1], order=(2, 0, 1)).fit().predict(len(res), len(res)))
             pred_arima = np.append(pred_arima, ARIMA(res[i, 0:res.shape[1]-1], order=(1, 1, 1)).fit().predict(len(res), len(res), typ='levels'))
-        
         
         # visual part
         mse_mins = np.array([mean_squared_error(pred_ar, res[:, res.shape[1]-1]), mean_squared_error(pred_ma, res[:, res.shape[1]-1]),
@@ -265,48 +264,11 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             ratio_vio_sel1 = st.selectbox("First category col (or nut id col)", col_obj, 0)
         with right:
             ratio_vio_sel2 = st.selectbox("Second category column", ['-'] + list(col_obj), 0)
-        
-        res = {ratio_vio_sel1: table[ratio_vio_sel1].unique(), new_ratio_name: []}
-        for nut_id in res[ratio_vio_sel1]:
-                  res[new_ratio_name].append(table[table[ratio_vio_sel1] == nut_id][new_ratio_name].mean())
-        res = pd.DataFrame(res)
 
-        px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
-        if len(res[ratio_vio_sel1][0]) == 2:
-            for el in res[ratio_vio_sel1]:
-                if el in lis_id_eu_nut0:
-                    map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[ratio_vio_sel1], featureidkey = 'properties.ISO2',
-                                               color = new_ratio_name, color_continuous_scale = px.colors.cyclical.IceFire,
-                                               range_color = (res[new_ratio_name].min(), res[new_ratio_name].max()),
-                                               mapbox_style = "carto-positron",
-                                               zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
-                                               opacity = 0.5,
-                                               labels = {new_ratio_name: new_ratio_name})
-                    st.plotly_chart(map_box, use_container_width=True); break
-        
-        if len(res[ratio_vio_sel1][0]) == 4:
-            for el in res[ratio_vio_sel1]:
-                if el in lis_id_eu_nut2:
-                    map_box = px.choropleth_mapbox(res, geojson = eu_nut2, locations = res[ratio_vio_sel1], featureidkey = 'properties.id',
-                                               color = new_ratio_name, color_continuous_scale = px.colors.cyclical.IceFire,
-                                               range_color = (res[new_ratio_name].min(), res[new_ratio_name].max()),
-                                               mapbox_style = "carto-positron",
-                                               zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
-                                               opacity = 0.5,
-                                               labels = {new_ratio_name: new_ratio_name})
-                    st.plotly_chart(map_box, use_container_width=True); break
-        
-        if len(res[ratio_vio_sel1][0]) == 5:
-            for el in res[ratio_vio_sel1]:
-                if el in lis_id_eu_nut3:
-                    map_box = px.choropleth_mapbox(res, geojson = eu_nut3, locations = res[ratio_vio_sel1], featureidkey = 'properties.id',
-                                               color = new_ratio_name, color_continuous_scale = px.colors.cyclical.IceFire,
-                                               range_color = (res[new_ratio_name].min(), res[new_ratio_name].max()),
-                                               mapbox_style = "carto-positron",
-                                               zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
-                                               opacity = 0.5,
-                                               labels = {new_ratio_name: new_ratio_name})
-                    st.plotly_chart(map_box, use_container_width=True); break
+        res = pd.DataFrame([[nut, table[table[ratio_vio_sel1] == nut][new_ratio_name].mean()] for nut in table[ratio_vio_sel1].unique()], 
+                           columns = [ratio_vio_sel1, new_ratio_name])
+
+        st.plotly_chart(map_creation(res, ratio_vio_sel1, new_ratio_name), use_container_width=True)
 
         cou_sel = st.selectbox("Id to explore", ['All ids'] + list(table[ratio_vio_sel1].unique()), 0)
         if cou_sel == 'All ids':
