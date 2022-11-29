@@ -62,33 +62,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
     lis_id_eu_nut2 = [el['properties']['id'] for el in eu_nut2['features']]
     lis_id_eu_nut3 = [el['properties']['id'] for el in eu_nut3['features']]
 
-    # selection boxes columns
-    col_an = [col for col in list(table) if len(table[col].unique()) < 10 or is_numeric_dtype(table[col])]
-    col_obj = [col for col in list(table) if table[col].dtypes == 'O']
-    col_mul = [col for col in list(table) if is_numeric_dtype(table[col])]
-    lis_check = [{'label': col, 'value': col} for col in col_mul if col != col_mul[0]]
-
-    widget = st.selectbox("what is the widget you want to display:",
-                          ["Data View", "Correlation Analysis", "Geographical Analysis", "Mono dimensional Analysis", "Ratios Analysis", "Multi-dimensional Analysis", 
-                           "Autocorrelation Analysis", "Feature Importance Analysis", "Anomalies check", "Consistency checks", "Time series forecasting"], 0)
-    
-    if widget == "Data View":
-        # showing the table with the data
-        st.header("Data View")
-        st.write("Data contained into the dataset:", table)
-    
-    if widget == "Geographical Analysis":
-        # map-box part
-        st.sidebar.subheader("Map area")
-        nut_col = st.sidebar.selectbox("Nut column", col_obj, 0)
-        map_feature = st.sidebar.selectbox("Feature column", col_mul, 0)
-        map_q = st.sidebar.number_input("Quantile value", 0, 100, 50)
-
-        st.header("Geographical Analysis")
-
-        res = pd.DataFrame([[nut, table[table[nut_col] == nut][map_feature].quantile(map_q/100)] for nut in table[nut_col].unique()], 
-                           columns = [nut_col, map_feature])
-
+    # functions
+    def map_creation(res, map_feature, nut_col):
         px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
         if len(res[nut_col][0]) == 2:
             map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[nut_col], featureidkey = 'properties.ISO2',
@@ -116,8 +91,36 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                        zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
                                        opacity = 0.5,
                                        labels = {map_feature: map_feature})
+        return map_box
 
-        st.plotly_chart(map_box, use_container_width=True)
+    # selection boxes columns
+    col_an = [col for col in list(table) if len(table[col].unique()) < 10 or is_numeric_dtype(table[col])]
+    col_obj = [col for col in list(table) if table[col].dtypes == 'O']
+    col_mul = [col for col in list(table) if is_numeric_dtype(table[col])]
+    lis_check = [{'label': col, 'value': col} for col in col_mul if col != col_mul[0]]
+
+    widget = st.selectbox("what is the widget you want to display:",
+                          ["Data View", "Correlation Analysis", "Geographical Analysis", "Mono dimensional Analysis", "Ratios Analysis", "Multi-dimensional Analysis", 
+                           "Autocorrelation Analysis", "Feature Importance Analysis", "Anomalies check", "Consistency checks", "Time series forecasting"], 0)
+    
+    if widget == "Data View":
+        # showing the table with the data
+        st.header("Data View")
+        st.write("Data contained into the dataset:", table)
+    
+    if widget == "Geographical Analysis":
+        # map-box part
+        st.sidebar.subheader("Map area")
+        nut_col = st.sidebar.selectbox("Nut column", col_obj, 0)
+        map_feature = st.sidebar.selectbox("Feature column", col_mul, 0)
+        map_q = st.sidebar.number_input("Quantile value", 0, 100, 50)
+
+        st.header("Geographical Analysis")
+
+        res = pd.DataFrame([[nut, table[table[nut_col] == nut][map_feature].quantile(map_q/100)] for nut in table[nut_col].unique()], 
+                           columns = [nut_col, map_feature])
+        
+        st.plotly_chart(map_creation(res, map_feature, nut_col), use_container_width=True)
     
     if widget == "Mono dimensional Analysis":
         # mono variable analysis part
