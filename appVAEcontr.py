@@ -612,89 +612,44 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             out_type = st.selectbox("Outlier type", ['All', 'Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers'], 0)
         
         if out_type == 'All':
-            df_AllOut['Sel'] = df_AllOut[out_id_col].str.slice(0, 2).values
-            res = {out_id_col: df_AllOut['Sel'].unique(), 'Num. Out.': []}
-            for nut_id in res[out_id_col]:
-                  res['Num. Out.'].append(df_AllOut[df_AllOut['Sel'] == nut_id].shape[0])
-            res = pd.DataFrame(res)
-
-            px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
-            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[out_id_col], featureidkey = 'properties.ISO2',
-                                           color = 'Num. Out.', color_continuous_scale = px.colors.cyclical.IceFire,
-                                           range_color = (res['Num. Out.'].min(), res['Num. Out.'].max()),
-                                           mapbox_style = "carto-positron",
-                                           zoom = 3, center = {"lat": 47.42, "lon": 15.53},
-                                           opacity = 0.5,
-                                           labels = {'Num. Out.': 'Num. Out.'})
-            st.plotly_chart(map_box, use_container_width=True)
+            res = pd.DataFrame([[nut, df_AllOut[df_AllOut[out_id_col] == nut_id].shape[0]] for nut in df_AllOut[out_id_col].unique()], 
+                               columns = [out_id_col, 'Num. Out.'])
+            try: 
+                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
+            except:
+                st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
          
         if out_type == 'Strong left outliers':
-            df_StLeftOut['Sel'] = df_StLeftOut[out_id_col].str.slice(0, 2).values
-            res = {out_id_col: df_StLeftOut['Sel'].unique(), 'Num. Out.': []}
-            for nut_id in res[out_id_col]:
-                  res['Num. Out.'].append(df_StLeftOut[df_StLeftOut['Sel'] == nut_id].shape[0])
-            res = pd.DataFrame(res)
-
-            px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
-            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[out_id_col], featureidkey = 'properties.ISO2',
-                                           color = 'Num. Out.', color_continuous_scale = px.colors.cyclical.IceFire,
-                                           range_color = (res['Num. Out.'].min(), res['Num. Out.'].max()),
-                                           mapbox_style = "carto-positron",
-                                           zoom = 3, center = {"lat": 47.42, "lon": 15.53},
-                                           opacity = 0.5,
-                                           labels = {'Num. Out.': 'Num. Out.'})
-            st.plotly_chart(map_box, use_container_width=True)
+            res = pd.DataFrame([[nut, df_StLeftOut[df_StLeftOut[out_id_col] == nut_id].shape[0]] for nut in df_StLeftOut[out_id_col].unique()], 
+                               columns = [out_id_col, 'Num. Out.'])
+            try: 
+                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
+            except:
+                st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
         if out_type == 'Weak left outliers':
-            df_WeLeftOut['Sel'] = df_WeLeftOut[out_id_col].str.slice(0, 2).values
-            res = {out_id_col: df_WeLeftOut['Sel'].unique(), 'Num. Out.': []}
-            for nut_id in res[out_id_col]:
-                  res['Num. Out.'].append(df_WeLeftOut[df_WeLeftOut['Sel'] == nut_id].shape[0])
-            res = pd.DataFrame(res)
-
-            px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
-            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[out_id_col], featureidkey = 'properties.ISO2',
-                                           color = 'Num. Out.', color_continuous_scale = px.colors.cyclical.IceFire,
-                                           range_color = (res['Num. Out.'].min(), res['Num. Out.'].max()),
-                                           mapbox_style = "carto-positron",
-                                           zoom = 3, center = {"lat": 47.42, "lon": 15.53},
-                                           opacity = 0.5,
-                                           labels = {'Num. Out.': 'Num. Out.'})
-            st.plotly_chart(map_box, use_container_width=True)
+            res = pd.DataFrame([[nut, df_WeLeftOut[df_WeLeftOut[out_id_col] == nut_id].shape[0]] for nut in df_WeLeftOut[out_id_col].unique()], 
+                               columns = [out_id_col, 'Num. Out.'])
+            try: 
+                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
+            except:
+                st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
         if out_type == 'Weak right outliers':
-            df_WeRightOut['Sel'] = df_WeRightOut[out_id_col].str.slice(0, 2).values
-            res = {out_id_col: df_WeRightOut['Sel'].unique(), 'Num. Out.': []}
-            for nut_id in res[out_id_col]:
-                  res['Num. Out.'].append(df_WeRightOut[df_WeRightOut['Sel'] == nut_id].shape[0])
-            res = pd.DataFrame(res)
-
-            px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
-            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[out_id_col], featureidkey = 'properties.ISO2',
-                                           color = 'Num. Out.', color_continuous_scale = px.colors.cyclical.IceFire,
-                                           range_color = (res['Num. Out.'].min(), res['Num. Out.'].max()),
-                                           mapbox_style = "carto-positron",
-                                           zoom = 3, center = {"lat": 47.42, "lon": 15.53},
-                                           opacity = 0.5,
-                                           labels = {'Num. Out.': 'Num. Out.'})
-            st.plotly_chart(map_box, use_container_width=True)
+            res = pd.DataFrame([[nut, df_WeRightOut[df_WeRightOut[out_id_col] == nut_id].shape[0]] for nut in df_WeRightOut[out_id_col].unique()], 
+                               columns = [out_id_col, 'Num. Out.'])
+            try: 
+                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
+            except:
+                st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
         if out_type == 'Strong right outliers':
-            df_StRightOut['Sel'] = df_StRightOut[out_id_col].str.slice(0, 2).values
-            res = {out_id_col: df_StRightOut['Sel'].unique(), 'Num. Out.': []}
-            for nut_id in res[out_id_col]:
-                  res['Num. Out.'].append(df_StRightOut[df_StRightOut['Sel'] == nut_id].shape[0])
-            res = pd.DataFrame(res)
-
-            px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
-            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[out_id_col], featureidkey = 'properties.ISO2',
-                                           color = 'Num. Out.', color_continuous_scale = px.colors.cyclical.IceFire,
-                                           range_color = (res['Num. Out.'].min(), res['Num. Out.'].max()),
-                                           mapbox_style = "carto-positron",
-                                           zoom = 3, center = {"lat": 47.42, "lon": 15.53},
-                                           opacity = 0.5,
-                                           labels = {'Num. Out.': 'Num. Out.'})
-            st.plotly_chart(map_box, use_container_width=True)
+            res = pd.DataFrame([[nut, df_StRightOut[df_StRightOut[out_id_col] == nut_id].shape[0]] for nut in df_StRightOut[out_id_col].unique()], 
+                               columns = [out_id_col, 'Num. Out.'])
+            try: 
+                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
+            except:
+                st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
         
         out_cou = st.selectbox("Choose the specific value for the id", ['All ids'] + list(res[out_id_col]), 0)
          
