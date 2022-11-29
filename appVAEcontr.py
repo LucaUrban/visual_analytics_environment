@@ -612,7 +612,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             out_type = st.selectbox("Outlier type", ['All', 'Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers'], 0)
         
         if out_type == 'All':
-            res = pd.DataFrame([[nut, df_AllOut[df_AllOut[out_id_col] == nut_id].shape[0]] for nut in df_AllOut[out_id_col].unique()], 
+            res = pd.DataFrame([[nut, df_AllOut[df_AllOut[out_id_col] == nut].shape[0]] for nut in df_AllOut[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
@@ -620,7 +620,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
          
         if out_type == 'Strong left outliers':
-            res = pd.DataFrame([[nut, df_StLeftOut[df_StLeftOut[out_id_col] == nut_id].shape[0]] for nut in df_StLeftOut[out_id_col].unique()], 
+            res = pd.DataFrame([[nut, df_StLeftOut[df_StLeftOut[out_id_col] == nut].shape[0]] for nut in df_StLeftOut[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
@@ -628,7 +628,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
         if out_type == 'Weak left outliers':
-            res = pd.DataFrame([[nut, df_WeLeftOut[df_WeLeftOut[out_id_col] == nut_id].shape[0]] for nut in df_WeLeftOut[out_id_col].unique()], 
+            res = pd.DataFrame([[nut, df_WeLeftOut[df_WeLeftOut[out_id_col] == nut].shape[0]] for nut in df_WeLeftOut[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
@@ -636,7 +636,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
         if out_type == 'Weak right outliers':
-            res = pd.DataFrame([[nut, df_WeRightOut[df_WeRightOut[out_id_col] == nut_id].shape[0]] for nut in df_WeRightOut[out_id_col].unique()], 
+            res = pd.DataFrame([[nut, df_WeRightOut[df_WeRightOut[out_id_col] == nut].shape[0]] for nut in df_WeRightOut[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
@@ -644,7 +644,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 st.write('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
         if out_type == 'Strong right outliers':
-            res = pd.DataFrame([[nut, df_StRightOut[df_StRightOut[out_id_col] == nut_id].shape[0]] for nut in df_StRightOut[out_id_col].unique()], 
+            res = pd.DataFrame([[nut, df_StRightOut[df_StRightOut[out_id_col] == nut].shape[0]] for nut in df_StRightOut[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
