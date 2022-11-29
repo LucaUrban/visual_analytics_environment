@@ -86,10 +86,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
         st.header("Geographical Analysis")
 
-        res = {nut_col: table[nut_col].unique(), map_feature: []}
-        for nut_id in res[nut_col]:
-            res[map_feature].append(table[table[nut_col] == nut_id][map_feature].quantile(map_q/100))
-        res = pd.DataFrame(res)
+        res = pd.DataFrame([[nut, table[table[nut_col] == nut][map_feature].quantile(map_q/100)] for nut in table[nut_col].unique()], 
+                           columns = [nut_col, map_feature])
 
         px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
         if len(res[nut_col][0]) == 2:
