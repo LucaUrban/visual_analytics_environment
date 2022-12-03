@@ -454,17 +454,15 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             target.replace({np.nan : 0}, inplace = True)
 
-            reg_par = [[.1, 1], [10, 100]]
-            titles = tuple(f"Feature importance for alpha = {par}" for i in range(len(reg_par)) for par in reg_par[i])
+            reg_par = np.array([[.1, 1], [10, 100]]); dim_plots = reg_par.shape
 
             # Create figure with secondary y-axis
-            fig_tot = make_subplots(rows = 2, cols = 2, 
-                                    specs = [[{"secondary_y": True}, {"secondary_y": True}], 
-                                             [{"secondary_y": True}, {"secondary_y": True}]], 
-                                    subplot_titles = titles)
+            fig_tot = make_subplots(rows = dim_plots[0], cols = dim_plots[1], 
+                                    specs = [[{"secondary_y": True} for i in range(dim_plots[0])] for i in range(dim_plots[1])] 
+                                    subplot_titles = tuple(f"Feature importance for alpha = {par}" for i in range(dim_plots[0]) for par in reg_par[i]))
 
-            for num_row in range(2):
-                for num_col in range(2):
+            for num_row in range(dim_plots[0]):
+                for num_col in range(dim_plots[1]):
                     clf = Ridge(alpha = reg_par[num_row][num_col])
                     clf.fit(train_nm, target)
 
