@@ -268,7 +268,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             
         res = pd.DataFrame([[nut, table[table[ratio_vio_sel1] == nut][new_ratio_name].mean()] for nut in table[ratio_vio_sel1].unique()], 
                            columns = [ratio_vio_sel1, new_ratio_name])
-
         try: 
             st.plotly_chart(map_creation(res, ratio_vio_sel1, new_ratio_name, map_color), use_container_width=True)
         except:
@@ -458,7 +457,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             # Create figure with secondary y-axis
             fig_tot = make_subplots(rows = dim_plots[0], cols = dim_plots[1], 
-                                    specs = [[{"secondary_y": True} for i in range(dim_plots[0])] for i in range(dim_plots[1])] 
+                                    specs = [[{"secondary_y": True} for i in range(dim_plots[0])] for i in range(dim_plots[1])],
                                     subplot_titles = tuple(f"Feature importance for alpha = {par}" for i in range(dim_plots[0]) for par in reg_par[i]))
 
             for num_row in range(dim_plots[0]):
