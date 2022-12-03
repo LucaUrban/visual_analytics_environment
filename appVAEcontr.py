@@ -63,11 +63,15 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
     lis_id_eu_nut3 = [el['properties']['id'] for el in eu_nut3['features']]
 
     # functions
-    def map_creation(res, nut_col, map_feature):
+    def map_creation(res, nut_col, map_feature, color):
+        if color == 'Portland': m_color = px.colors.diverging.Portland
+        if color == 'Picnic': m_color = px.colors.diverging.Picnic
+        if color == 'Geyser': m_color = px.colors.diverging.Geyser
+        
         px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
         if len(res[nut_col][0]) == 2:
             map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[nut_col], featureidkey = 'properties.ISO2',
-                                       color = map_feature, color_continuous_scale = px.colors.diverging.Portland,
+                                       color = map_feature, color_continuous_scale = m_color,
                                        range_color = (res[map_feature].min(), res[map_feature].max()),
                                        mapbox_style = "carto-positron",
                                        zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
@@ -76,7 +80,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
         if len(res[nut_col][0]) == 4:
             map_box = px.choropleth_mapbox(res, geojson = eu_nut2, locations = res[nut_col], featureidkey = 'properties.id',
-                                       color = map_feature, color_continuous_scale = px.colors.diverging.Portland,
+                                       color = map_feature, color_continuous_scale = m_color,
                                        range_color = (res[map_feature].min(), res[map_feature].max()),
                                        mapbox_style = "carto-positron",
                                        zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
@@ -85,7 +89,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
         if len(res[nut_col][0]) == 5:
             map_box = px.choropleth_mapbox(res, geojson = eu_nut3, locations = res[nut_col], featureidkey = 'properties.id',
-                                       color = map_feature, color_continuous_scale = px.colors.diverging.Portland,
+                                       color = map_feature, color_continuous_scale = m_color,
                                        range_color = (res[map_feature].min(), res[map_feature].max()),
                                        mapbox_style = "carto-positron",
                                        zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
@@ -114,13 +118,14 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         nut_col = st.sidebar.selectbox("Nut column", col_obj, 0)
         map_feature = st.sidebar.selectbox("Feature column", col_mul, 0)
         map_q = st.sidebar.number_input("Quantile value", 0, 100, 50)
+        map_color = st.selectbox("Map color-palette:", ['Portland', 'Picnic', 'Geyser'], 0)
 
         st.header("Geographical Analysis")
 
         res = pd.DataFrame([[nut, table[table[nut_col] == nut][map_feature].quantile(map_q/100)] for nut in table[nut_col].unique()], 
                            columns = [nut_col, map_feature])
         
-        st.plotly_chart(map_creation(res, nut_col, map_feature), use_container_width=True)
+        st.plotly_chart(map_creation(res, nut_col, map_feature, color), use_container_width=True)
     
     if widget == "Mono dimensional Analysis":
         # mono variable analysis part
