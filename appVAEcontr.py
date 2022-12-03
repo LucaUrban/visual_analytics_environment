@@ -118,7 +118,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         nut_col = st.sidebar.selectbox("Nut column", col_obj, 0)
         map_feature = st.sidebar.selectbox("Feature column", col_mul, 0)
         map_q = st.sidebar.number_input("Quantile value", 0, 100, 50)
-        map_color = st.selectbox("Map color-palette:", ['Portland', 'Picnic', 'Geyser'], 0)
+        map_color = st.sidebar.selectbox("Map color-palette:", ['Portland', 'Picnic', 'Geyser'], 0)
 
         st.header("Geographical Analysis")
 
@@ -236,6 +236,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         st.sidebar.subheader("Ratio Area")
         ratio_num = st.sidebar.multiselect("Variables ratio numerator", col_mul)
         ratio_den = st.sidebar.multiselect("Variables ratio denominator", col_mul)
+        map_color = st.sidebar.selectbox("Map color-palette:", ['Portland', 'Picnic', 'Geyser'], 0)
         
         new_ratio_name = st.text_input('Name of the new ratio', 'R_1')
             
@@ -269,7 +270,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                            columns = [ratio_vio_sel1, new_ratio_name])
 
         try: 
-            st.plotly_chart(map_creation(res, ratio_vio_sel1, new_ratio_name), use_container_width=True)
+            st.plotly_chart(map_creation(res, ratio_vio_sel1, new_ratio_name, map_color), use_container_width=True)
         except:
             st.warning('You have to select a NUTS id column in the selection box after \"First category col (or nut id col)\" to produce the map')
 
@@ -506,6 +507,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
     if widget == "Anomalies check":
         use_col = st.sidebar.selectbox("Chosen Variable", col_mul, 0)
+        map_color = st.selectbox("Map color-palette:", ['Portland', 'Picnic', 'Geyser'], 0)
         var_clean = table[use_col].dropna().values
         
         # MLE normal
@@ -619,7 +621,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             res = pd.DataFrame([[nut, df_AllOut[df_AllOut[out_id_col] == nut].shape[0]] for nut in df_AllOut[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
-                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
+                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
             except:
                 st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
          
@@ -627,7 +629,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             res = pd.DataFrame([[nut, df_StLeftOut[df_StLeftOut[out_id_col] == nut].shape[0]] for nut in df_StLeftOut[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
-                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
+                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
             except:
                 st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
@@ -635,7 +637,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             res = pd.DataFrame([[nut, df_WeLeftOut[df_WeLeftOut[out_id_col] == nut].shape[0]] for nut in df_WeLeftOut[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
-                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
+                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
             except:
                 st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
@@ -643,7 +645,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             res = pd.DataFrame([[nut, df_WeRightOut[df_WeRightOut[out_id_col] == nut].shape[0]] for nut in df_WeRightOut[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
-                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
+                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
             except:
                 st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
             
@@ -651,7 +653,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             res = pd.DataFrame([[nut, df_StRightOut[df_StRightOut[out_id_col] == nut].shape[0]] for nut in df_StRightOut[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
-                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.'), use_container_width=True)
+                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
             except:
                 st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
         
