@@ -125,7 +125,10 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         res = pd.DataFrame([[nut, table[table[nut_col] == nut][map_feature].quantile(map_q/100)] for nut in table[nut_col].unique()], 
                            columns = [nut_col, map_feature])
         
-        st.plotly_chart(map_creation(res, nut_col, map_feature, color), use_container_width=True)
+        try:
+            st.plotly_chart(map_creation(res, nut_col, map_feature, map_color), use_container_width=True)
+        except:
+            st.warning('You have to select a NUTS id column in the selection box after \"First category col (or nut id col)\" to produce the map')
     
     if widget == "Mono dimensional Analysis":
         # mono variable analysis part
