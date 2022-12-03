@@ -455,7 +455,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             target.replace({np.nan : 0}, inplace = True)
 
             reg_par = [[.1, 1], [10, 100]]
-            titles = tuple(f"Feature importance for alpha = {par}" for i in reg_par for par in reg_par[i])
+            titles = tuple(f"Feature importance for alpha = {par}" for par in reg_par[i] for i in reg_par)
 
             # Create figure with secondary y-axis
             fig_tot = make_subplots(rows = 2, cols = 2, 
