@@ -441,23 +441,20 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         if len(fea_Imp_features) >= 2:
             scaler = StandardScaler()
             if id_sel == 'All ids':
-                target = table[feaImp_target]
-                train_nm = table[fea_Imp_features]
+                target = table[feaImp_target]; train_nm = table[fea_Imp_features]
             else:
-                target = table[table[id_sel_col] == id_sel][feaImp_target]
-                train_nm = table[table[id_sel_col] == id_sel][fea_Imp_features]
+                target = table[table[id_sel_col] == id_sel][feaImp_target]; train_nm = table[table[id_sel_col] == id_sel][fea_Imp_features]
 
+            # replacing the nan values and scaling target and features 
+            target.replace({np.nan : 0}, inplace = True)
             for name_col in fea_Imp_features:
                 train_nm[name_col].replace({np.nan : train_nm[name_col].mean()}, inplace = True)
             train_nm = scaler.fit_transform(train_nm)
 
-            target.replace({np.nan : 0}, inplace = True)
-
-            reg_par = np.array([[.1, 1], [10, 100]]); dim_plots = reg_par.shape
-
             # Create figure with secondary y-axis
+            reg_par = np.array([[.1, 1], [10, 100]]); dim_plots = reg_par.shape
             fig_tot = make_subplots(rows = dim_plots[0], cols = dim_plots[1], 
-                                    specs = [[{"secondary_y": True} for i in range(dim_plots[0])] for i in range(dim_plots[1])],
+                                    specs = [[{"secondary_y": True} for i in range(dim_plots[0])] for j in range(dim_plots[1])],
                                     subplot_titles = tuple(f"Feature importance for alpha = {par}" for i in range(dim_plots[0]) for par in reg_par[i]))
 
             for num_row in range(dim_plots[0]):
