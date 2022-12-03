@@ -454,8 +454,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             target.replace({np.nan : 0}, inplace = True)
 
-            Alpha = [.1, 1, 10, 100]; titles = tuple("Feature importance for alpha = " + str(alpha) for alpha in Alpha)
-            Alpha = [[.1, 1], [10, 100]]
+            reg_par = [[.1, 1], [10, 100]]
+            titles = tuple(f"Feature importance for alpha = {par)}" for i in reg_par for par in reg_par[i])
 
             # Create figure with secondary y-axis
             fig_tot = make_subplots(rows = 2, cols = 2, 
@@ -465,7 +465,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             for num_row in range(2):
                 for num_col in range(2):
-                    clf = Ridge(alpha = Alpha[num_row][num_col])
+                    clf = Ridge(alpha = reg_par[num_row][num_col])
                     clf.fit(train_nm, target)
 
                     importance = softmax(normalize([clf.coef_]))[0]
