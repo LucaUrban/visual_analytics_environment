@@ -418,7 +418,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
         st.subheader("Regression Parameters")
         if flag == 1:
-            st.write(f"Intercept: {round(intercept, 4)} \nSlope: {round(coeff[0], 4)}"
+            st.write(f"Intercept: {round(intercept, 4)} \nSlope: {round(coeff[0], 4)}")
         else: 
             st.write("None \nNone")
     
