@@ -304,7 +304,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         multi_time = st.sidebar.selectbox("Multivariable time col", ['-'] + list(table.columns), 3)
         multiXax_col = st.sidebar.selectbox("Multivariable X axis col", col_mul, 1)
         multiYax_col = st.sidebar.selectbox("Multivariable Y axis col", col_mul, 2)
-        cat_col = st.sidebar.selectbox("Multivariable Y axis col", ['None'] + list(table.columns), 0)
+        cat_col = st.sidebar.selectbox("Category column", ['None'] + list(table.columns), 0)
         
         if multi_time != '-' and table[multi_time].dtype != 'O' and table[multi_time].max() != table[multi_time].min():
             multiSlider = st.sidebar.slider("Multivarible time value", int(table[multi_time].min()), int(table[multi_time].max()), int(table[multi_time].min()))
@@ -373,12 +373,19 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         cross_time = st.sidebar.selectbox("Autocorrelation time col", table.columns, 3)
         cross_col = st.sidebar.selectbox("Autocorrelation X axis col", col_mul, 1)
         crossSlider = st.sidebar.slider("Autocorrelation time value", int(table[cross_time].min()), int(table[cross_time].max()-1), int(table[cross_time].min()))
+        cat_col = st.sidebar.selectbox("Category column", ['None'] + list(table.columns), 0)
 
-        dff_cross_dw = table[table[cross_time] == crossSlider][[cross_index, cross_col]]
-        dff_cross_up = table[table[cross_time] == crossSlider + 1][[cross_index, cross_col]]
-        final_df_cross = pd.merge(dff_cross_dw, dff_cross_up, how = "inner", on = cross_index)
-
-        cross_plot = px.scatter(x = final_df_cross[cross_col + "_x"], y = final_df_cross[cross_col + "_y"], hover_name = final_df_cross[cross_index])
+        if cat_col == 'None':
+            dff_cross_dw = table[table[cross_time] == crossSlider][[cross_index, cross_col]]
+            dff_cross_up = table[table[cross_time] == crossSlider + 1][[cross_index, cross_col]]
+            final_df_cross = pd.merge(dff_cross_dw, dff_cross_up, how = "inner", on = cross_index)
+            cross_plot = px.scatter(x = final_df_cross[cross_col + "_x"], y = final_df_cross[cross_col + "_y"], hover_name = final_df_cross[cross_index])
+        else:
+            dff_cross_dw = table[table[cross_time] == crossSlider][[cross_index, cat_col, cross_col]]
+            dff_cross_up = table[table[cross_time] == crossSlider + 1][[cross_index, cat_col, cross_col]]
+            final_df_cross = pd.merge(dff_cross_dw, dff_cross_up, how = "inner", on = [cross_index, cat_col])
+            cross_plot = px.scatter(x = final_df_cross[cross_col + "_x"], y = final_df_cross[cross_col + "_y"], 
+                                    hover_name = final_df_cross[cross_index], color = final_df_cross[cat_col])
 
         cross_plot.update_xaxes(title = cross_col)
         cross_plot.update_yaxes(title = cross_col + " Next Year")
