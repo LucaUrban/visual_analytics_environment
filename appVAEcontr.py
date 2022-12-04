@@ -448,7 +448,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             target.replace({np.nan : 0}, inplace = True)
             for name_col in fea_Imp_features:
                 train_nm[name_col].replace({np.nan : train_nm[name_col].mean()}, inplace = True)
-            train_nm = scaler.fit_transform(train_nm); target = scaler.fit_transform(target)
+            train_nm = scaler.fit_transform(train_nm)
 
             # Create figure with secondary y-axis
             reg_par = np.array([[.1, 1], [10, 100]]); dim_plots = reg_par.shape
