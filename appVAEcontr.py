@@ -455,19 +455,18 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             fig_tot = make_subplots(rows = dim_plots[0], cols = dim_plots[1], 
                                     specs = [[{"secondary_y": True} for i in range(dim_plots[0])] for j in range(dim_plots[1])],
                                     subplot_titles = tuple(f"Feature importance for alpha = {par}" for i in range(dim_plots[0]) for par in reg_par[i]))
-
-            # Choosing the model
-            if ch_model == 'Ridge Regression': model = Ridge(alpha = reg_par[num_row][num_col], random_state=0)
-            if ch_model == 'Elastic Net Regression': model = ElasticNet(alpha = reg_par[num_row][num_col], random_state=0)
-            if ch_model == 'Lasso Regression': model = Lasso(alpha = reg_par[num_row][num_col], random_state=0)
-            if ch_model == 'LightGBM': pass
                      
             for num_row in range(dim_plots[0]):
                 for num_col in range(dim_plots[1]):
-                    clf = Ridge(alpha = reg_par[num_row][num_col])
-                    clf.fit(train_nm, target)
+                    # Constructing the model
+                    if ch_model == 'Ridge Regression': model = Ridge(alpha = reg_par[num_row][num_col], random_state=0)
+                    if ch_model == 'Elastic Net Regression': model = ElasticNet(alpha = reg_par[num_row][num_col], random_state=0)
+                    if ch_model == 'Lasso Regression': model = Lasso(alpha = reg_par[num_row][num_col], random_state=0)
+                    if ch_model == 'LightGBM': pass
+                    
+                    model.fit(train_nm, target)
 
-                    importance = softmax(normalize([clf.coef_]))[0]
+                    importance = softmax(normalize([model.coef_]))[0]
                     dict_soft = {fea_Imp_features[i]: importance[i]*100 for i in range(importance.shape[0])}
                     dict_soft = {k: v for k, v in sorted(dict_soft.items(), key=lambda item: item[1], reverse = True)}
                     
