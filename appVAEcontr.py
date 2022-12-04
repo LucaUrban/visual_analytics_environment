@@ -315,7 +315,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         if cat_col == 'None':
             multi_plot = px.scatter(x = dff[multiXax_col], y = dff[multiYax_col], hover_name = dff[multi_index])
         else:
-            multi_plot = px.scatter(x = dff[multiXax_col], y = dff[multiYax_col], hover_name = dff[multi_index], color = cat_col)
+            multi_plot = px.scatter(x = dff[multiXax_col], y = dff[multiYax_col], hover_name = dff[multi_index], color = dff[cat_col])
         multi_plot.update_traces(customdata = dff[multi_index])
         multi_plot.update_xaxes(title = multiXax_col)
         multi_plot.update_yaxes(title = multiYax_col)
