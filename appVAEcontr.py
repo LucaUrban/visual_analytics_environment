@@ -427,7 +427,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         st.sidebar.subheader("Feature Importance Area")
         feaImp_target = st.sidebar.selectbox("Feature Importance target", col_mul, 0)
         id_sel_col = st.sidebar.selectbox("ID/category column", table.columns, 0)
-        ch_model = st.sidebar.selectbox("Model", ['Ridge Regression', 'Elastic Net Regression', 'Lasso Regression', 'LightGBM'], 0)
+        ch_model = st.sidebar.selectbox("Model", ['Ridge Regression', 'Elastic Net Regression', 'Lasso Regression'], 0)
 
         st.header("Feature Importance Analysis")
         
@@ -462,7 +462,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     if ch_model == 'Ridge Regression': model = Ridge(alpha = reg_par[num_row][num_col], random_state=0)
                     if ch_model == 'Elastic Net Regression': model = ElasticNet(alpha = reg_par[num_row][num_col], random_state=0)
                     if ch_model == 'Lasso Regression': model = Lasso(alpha = reg_par[num_row][num_col], random_state=0)
-                    if ch_model == 'LightGBM': pass
                     
                     model.fit(train_nm, target)
 
