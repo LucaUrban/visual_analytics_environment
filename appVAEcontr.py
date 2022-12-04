@@ -13,7 +13,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 from plotly.colors import n_colors
-from sklearn.linear_model import Ridge, LinearRegression
+from sklearn.linear_model import Ridge, LinearRegression, ElasticNet, Lasso
 from sklearn.preprocessing import StandardScaler, normalize
 from sklearn.metrics import mean_squared_error
 from statsmodels.tsa.ar_model import AutoReg
@@ -418,17 +418,16 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
         st.subheader("Regression Parameters")
         if flag == 1:
-            st.write("Intercept: " + str(round(intercept, 4)))
-            st.write("Slope: " + str(round(coeff[0], 4)))
+            st.write(f"Intercept: {round(intercept, 4)} \nSlope: {round(coeff[0], 4)}"
         else: 
-            st.write("None") 
-            st.write("None")
+            st.write("None \nNone")
     
     if widget == "Feature Importance Analysis":
         # pareto chart with feature importance on ridge regressor
         st.sidebar.subheader("Feature Importance Area")
-        feaImp_target = st.sidebar.selectbox("Feature Importance target", col_mul, 1)
-        id_sel_col = st.sidebar.selectbox("ID/category column", table.columns, 2)
+        feaImp_target = st.sidebar.selectbox("Feature Importance target", col_mul, 0)
+        id_sel_col = st.sidebar.selectbox("ID/category column", table.columns, 0)
+        ch_model = st.sidebar.selectbox("Model", ['Ridge Regression', 'Elastic Net Regression', 'Lasso Regression', 'LightGBM'], 0)
 
         st.header("Feature Importance Analysis")
         
@@ -449,7 +448,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             target.replace({np.nan : 0}, inplace = True)
             for name_col in fea_Imp_features:
                 train_nm[name_col].replace({np.nan : train_nm[name_col].mean()}, inplace = True)
-            train_nm = scaler.fit_transform(train_nm)
+            train_nm = scaler.fit_transform(train_nm); target = scaler.fit_transform(target)
 
             # Create figure with secondary y-axis
             reg_par = np.array([[.1, 1], [10, 100]]); dim_plots = reg_par.shape
@@ -457,6 +456,12 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                     specs = [[{"secondary_y": True} for i in range(dim_plots[0])] for j in range(dim_plots[1])],
                                     subplot_titles = tuple(f"Feature importance for alpha = {par}" for i in range(dim_plots[0]) for par in reg_par[i]))
 
+            # Choosing the model
+            if ch_model == 'Ridge Regression': model = Ridge(alpha = reg_par[num_row][num_col], random_state=0)
+            if ch_model == 'Elastic Net Regression': model = ElasticNet(alpha = reg_par[num_row][num_col], random_state=0)
+            if ch_model == 'Lasso Regression': model = Lasso(alpha = reg_par[num_row][num_col], random_state=0)
+            if ch_model == 'LightGBM': pass
+                     
             for num_row in range(dim_plots[0]):
                 for num_col in range(dim_plots[1]):
                     clf = Ridge(alpha = reg_par[num_row][num_col])
