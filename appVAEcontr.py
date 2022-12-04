@@ -304,13 +304,18 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         multi_time = st.sidebar.selectbox("Multivariable time col", ['-'] + list(table.columns), 3)
         multiXax_col = st.sidebar.selectbox("Multivariable X axis col", col_mul, 1)
         multiYax_col = st.sidebar.selectbox("Multivariable Y axis col", col_mul, 2)
+        cat_col = st.sidebar.selectbox("Multivariable Y axis col", ['None'] + list(table.columns), 0)
+        
         if multi_time != '-' and table[multi_time].dtype != 'O' and table[multi_time].max() != table[multi_time].min():
             multiSlider = st.sidebar.slider("Multivarible time value", int(table[multi_time].min()), int(table[multi_time].max()), int(table[multi_time].min()))
             dff = table[table[multi_time] == multiSlider]
         else: 
             dff = table
             
-        multi_plot = px.scatter(x = dff[multiXax_col], y = dff[multiYax_col], hover_name = dff[multi_index])
+        if cat_col == 'None':
+            multi_plot = px.scatter(x = dff[multiXax_col], y = dff[multiYax_col], hover_name = dff[multi_index])
+        else:
+            multi_plot = px.scatter(x = dff[multiXax_col], y = dff[multiYax_col], hover_name = dff[multi_index], color = cat_col)
         multi_plot.update_traces(customdata = dff[multi_index])
         multi_plot.update_xaxes(title = multiXax_col)
         multi_plot.update_yaxes(title = multiYax_col)
