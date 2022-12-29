@@ -70,31 +70,22 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
         px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
         if len(res[nut_col][0]) == 2:
-            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[nut_col], featureidkey = 'properties.ISO2',
-                                       color = map_feature, color_continuous_scale = m_color,
-                                       range_color = (res[map_feature].min(), res[map_feature].max()),
-                                       mapbox_style = "carto-positron",
-                                       zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
-                                       opacity = 0.5,
-                                       labels = {map_feature: map_feature})
+            map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[nut_col], featureidkey = 'properties.ISO2', color = map_feature, 
+                                           color_continuous_scale = m_color, range_color = (res[map_feature].min(), res[map_feature].max()),
+                                           mapbox_style = "carto-positron", zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329}, opacity = 0.5,
+                                           labels = {map_feature: map_feature})
         
         if len(res[nut_col][0]) == 4:
-            map_box = px.choropleth_mapbox(res, geojson = eu_nut2, locations = res[nut_col], featureidkey = 'properties.id',
-                                       color = map_feature, color_continuous_scale = m_color,
-                                       range_color = (res[map_feature].min(), res[map_feature].max()),
-                                       mapbox_style = "carto-positron",
-                                       zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
-                                       opacity = 0.5,
-                                       labels = {map_feature: map_feature})
+            map_box = px.choropleth_mapbox(res, geojson = eu_nut2, locations = res[nut_col], featureidkey = 'properties.id', color = map_feature, 
+                                           color_continuous_scale = m_color, range_color = (res[map_feature].min(), res[map_feature].max()), 
+                                           mapbox_style = "carto-positron", zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329}, opacity = 0.5,
+                                           labels = {map_feature: map_feature})
         
         if len(res[nut_col][0]) == 5:
-            map_box = px.choropleth_mapbox(res, geojson = eu_nut3, locations = res[nut_col], featureidkey = 'properties.id',
-                                       color = map_feature, color_continuous_scale = m_color,
-                                       range_color = (res[map_feature].min(), res[map_feature].max()),
-                                       mapbox_style = "carto-positron",
-                                       zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329},
-                                       opacity = 0.5,
-                                       labels = {map_feature: map_feature})
+            map_box = px.choropleth_mapbox(res, geojson = eu_nut3, locations = res[nut_col], featureidkey = 'properties.id', color = map_feature, 
+                                           color_continuous_scale = m_color, range_color = (res[map_feature].min(), res[map_feature].max()), 
+                                           mapbox_style = "carto-positron", zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329}, opacity = 0.5, 
+                                           labels = {map_feature: map_feature})
         return map_box
 
     # selection boxes columns
@@ -118,7 +109,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         nut_col = st.sidebar.selectbox("Nut column", col_obj, 0)
         map_feature = st.sidebar.selectbox("Feature column", col_mul, 0)
         map_q = st.sidebar.number_input("Quantile value", 0, 100, 50)
-        map_color = st.sidebar.selectbox("Map color-palette:", ['Portland', 'Picnic', 'Geyser'], 0)
+        map_color = st.sidebar.selectbox("Map color-palette", ['Portland', 'Picnic', 'Geyser'], 0)
 
         st.header("Geographical Analysis")
 
@@ -128,7 +119,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         try:
             st.plotly_chart(map_creation(res, nut_col, map_feature, map_color), use_container_width=True)
         except:
-            st.warning('You have to select a NUTS id column in the selection box after \"First category col (or nut id col)\" to produce the map')
+            st.warning('You have to select a NUTS id column in the selection box after \"Nut column\" to produce the map')
     
     if widget == "Mono dimensional Analysis":
         # mono variable analysis part
@@ -236,7 +227,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         st.sidebar.subheader("Ratio Area")
         ratio_num = st.sidebar.multiselect("Variables ratio numerator", col_mul)
         ratio_den = st.sidebar.multiselect("Variables ratio denominator", col_mul)
-        map_color = st.sidebar.selectbox("Map color-palette:", ['Portland', 'Picnic', 'Geyser'], 0)
+        map_color = st.sidebar.selectbox("Map color-palette", ['Portland', 'Picnic', 'Geyser'], 0)
         
         new_ratio_name = st.text_input('Name of the new ratio', 'R_1')
             
@@ -324,7 +315,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
         if multi_time != '-' and table[multi_time].dtype != 'O' and table[multi_time].max() != table[multi_time].min():
             # time control charts
-            el_id = st.selectbox("Id time control charts", table[multi_index].unique(), 1)
+            el_id = st.selectbox("Id time control charts", table[multi_index].unique(), 0)
 
             dff_tcc = table[table[multi_index] == el_id][[multi_time, multiXax_col, multiYax_col]]
             if len(list(dff_tcc[multi_time].unique())) < dff_tcc.shape[0]:
@@ -373,22 +364,23 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         cross_time = st.sidebar.selectbox("Autocorrelation time col", table.columns, 3)
         cross_col = st.sidebar.selectbox("Autocorrelation X axis col", col_mul, 1)
         crossSlider = st.sidebar.slider("Autocorrelation time value", int(table[cross_time].min()), int(table[cross_time].max()-1), int(table[cross_time].min()))
+        lag_val = st.sidebar.number_input("Time Lag Value", 1, 10, 1)
         cat_col = st.sidebar.selectbox("Category column", ['None'] + list(table.columns), 0)
 
         if cat_col == 'None':
-            dff_cross_dw = table[table[cross_time] == crossSlider][[cross_index, cross_col]]
-            dff_cross_up = table[table[cross_time] == crossSlider + 1][[cross_index, cross_col]]
-            final_df_cross = pd.merge(dff_cross_dw, dff_cross_up, how = "inner", on = cross_index)
+            final_df_cross = pd.merge(table[table[cross_time] == crossSlider][[cross_index, cross_col]], 
+                                      table[table[cross_time] == crossSlider + lag_val][[cross_index, cross_col]], 
+                                      how = "inner", on = cross_index)
             cross_plot = px.scatter(x = final_df_cross[cross_col + "_x"], y = final_df_cross[cross_col + "_y"], hover_name = final_df_cross[cross_index])
         else:
-            dff_cross_dw = table[table[cross_time] == crossSlider][[cross_index, cat_col, cross_col]]
-            dff_cross_up = table[table[cross_time] == crossSlider + 1][[cross_index, cat_col, cross_col]]
-            final_df_cross = pd.merge(dff_cross_dw, dff_cross_up, how = "inner", on = [cross_index, cat_col])
+            final_df_cross = pd.merge(table[table[cross_time] == crossSlider][[cross_index, cat_col, cross_col]], 
+                                      table[table[cross_time] == crossSlider + lag_val][[cross_index, cat_col, cross_col]], 
+                                      how = "inner", on = [cross_index, cat_col])
             cross_plot = px.scatter(x = final_df_cross[cross_col + "_x"], y = final_df_cross[cross_col + "_y"], 
                                     hover_name = final_df_cross[cross_index], color = final_df_cross[cat_col])
 
         cross_plot.update_xaxes(title = cross_col)
-        cross_plot.update_yaxes(title = cross_col + " Next Year")
+        cross_plot.update_yaxes(title = cross_col + f" After {lag_val} years")
 
         st.plotly_chart(cross_plot, use_container_width=True)
 
@@ -406,7 +398,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             dff_diff = pd.DataFrame(data = res)
         title = '<b>{}</b><br>{}'.format(el_id_diff, cross_col)
 
-        fig_diff = go.Figure(); flag = 0
+        fig_diff = go.Figure()
         if dff_diff.shape[0] > 1:
             x = [[i, 0] for i in range(1, dff_diff.shape[0])]
             Y = [dff_diff[cross_col].iloc[dff_diff.shape[0] - i - 1] - dff_diff[cross_col].iloc[dff_diff.shape[0] - i] for i in range(1, dff_diff.shape[0])]
@@ -422,17 +414,14 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                xref='paper', yref='paper', showarrow=False, align='left',
                                bgcolor='rgba(255, 255, 255, 0.5)', text = title)
             fig_diff.update_layout(xaxis_title = cross_time, yaxis_title = list(dff_diff)[1])
-            flag = 1
+            fig_diff.update_layout(height = 400)
 
-        fig_diff.update_layout(height = 400)
+            st.plotly_chart(fig_diff, use_container_width = True)
 
-        st.plotly_chart(fig_diff, use_container_width = True)
-
-        st.subheader("Regression Parameters")
-        if flag == 1:
+            st.subheader("Regression Parameters")
             st.write(f"Intercept: {round(intercept, 4)} \nSlope: {round(coeff[0], 4)}")
-        else: 
-            st.write("None \nNone")
+        else:
+            st.warning("It wasn\'t possible to create the plot because of the lack of data")
     
     if widget == "Feature Importance Analysis":
         # pareto chart with feature importance on ridge regressor
@@ -516,7 +505,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
     if widget == "Anomalies check":
         use_col = st.sidebar.selectbox("Chosen Variable", col_mul, 0)
-        map_color = st.selectbox("Map color-palette:", ['Portland', 'Picnic', 'Geyser'], 0)
+        map_color = st.selectbox("Map color-palette", ['Portland', 'Picnic', 'Geyser'], 0)
         var_clean = table[use_col].dropna().values
         
         # MLE normal
@@ -592,8 +581,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             df_WeLeftOut = table[(table[use_col] >= Q1 - (2 * tukey_const * ITQ)) & (table[use_col] <= Q1 - (tukey_const * ITQ))]
             df_WeRightOut = table[(table[use_col] >= Q3 + (tukey_const * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * ITQ))]
             df_StRightOut = table[table[use_col] > Q3 + (2 * tukey_const * ITQ)]
-            st.table(pd.DataFrame(np.array([df_StLeftOut.shape[0], df_WeLeftOut.shape[0], df_WeRightOut.shape[0], df_StRightOut.shape[0]]).reshape(1, 4),
-                                  index = ['Number'], columns = ['Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers']))
         else:
             # calculating the medcouple function for the tukey fence
             if var_clean.shape[0] > 5000:
@@ -608,16 +595,15 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 df_WeLeftOut = table[(table[use_col] >= Q1 - (2 * tukey_const * math.exp(-4 * MC) * ITQ)) & (table[use_col] <= Q1 - (tukey_const * math.exp(-4 * MC) * ITQ))]
                 df_WeRightOut = table[(table[use_col] >= Q3 + (tukey_const * math.exp(3 * MC) * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * math.exp(3 * MC) * ITQ))]
                 df_StRightOut = table[table[use_col] > Q3 + (2 * tukey_const * math.exp(3 * MC) * ITQ)]
-                st.table(pd.DataFrame(np.array([df_StLeftOut.shape[0], df_WeLeftOut.shape[0], df_WeRightOut.shape[0], df_StRightOut.shape[0]]).reshape(1, 4),
-                                      index = ['Number'], columns = ['Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers']))
             else:
                 df_AllOut = table[(table[use_col] <= Q1 - (tukey_const * math.exp(-3 * MC) * ITQ)) | (table[use_col] >= Q3 + (tukey_const * math.exp(4 * MC) * ITQ))]
                 df_StLeftOut = table[table[use_col] < Q1 - (2 * tukey_const * math.exp(-3 * MC) * ITQ)]
                 df_WeLeftOut = table[(table[use_col] >= Q1 - (2 * tukey_const * math.exp(-3 * MC) * ITQ)) & (table[use_col] <= Q1 - (tukey_const * math.exp(-3 * MC) * ITQ))]
                 df_WeRightOut = table[(table[use_col] >= Q3 + (tukey_const * math.exp(4 * MC) * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * math.exp(4 * MC) * ITQ))]
                 df_StRightOut = table[table[use_col] > Q3 + (2 * tukey_const * math.exp(4 * MC) * ITQ)]
-                st.table(pd.DataFrame(np.array([df_StLeftOut.shape[0], df_WeLeftOut.shape[0], df_WeRightOut.shape[0], df_StRightOut.shape[0]]).reshape(1, 4),
-                                      index = ['Number'], columns = ['Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers']))
+                
+        st.table(pd.DataFrame(np.array([df_StLeftOut.shape[0], df_WeLeftOut.shape[0], df_WeRightOut.shape[0], df_StRightOut.shape[0]]).reshape(1, 4),
+                              index = ['Number'], columns = ['Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers']))
         
         # a more specific view of the ouliers by country or generic id and type
         left, right = st.columns(2)
