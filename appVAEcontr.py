@@ -67,7 +67,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         if color == 'Portland': m_color = px.colors.diverging.Portland
         if color == 'Picnic': m_color = px.colors.diverging.Picnic
         if color == 'Geyser': m_color = px.colors.diverging.Geyser
-        st.write(res)
+        
         px.set_mapbox_access_token("pk.eyJ1IjoibHVjYXVyYmFuIiwiYSI6ImNrZm5seWZnZjA5MjUydXBjeGQ5ZDBtd2UifQ.T0o-wf5Yc0iTSeq-A9Q2ww")
         if len(res[nut_col][0]) == 2:
             map_box = px.choropleth_mapbox(res, geojson = eu_nut0, locations = res[nut_col], featureidkey = 'properties.ISO2', color = map_feature, 
@@ -133,7 +133,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
         st.header("Geographical Analysis")
         try:
-            st.plotly_chart(map_creation(table[[nut_col, map_feature]].groupby(by = nut_col).quantile(map_q/100), nut_col, map_feature, map_color), use_container_width=True)
+            st.plotly_chart(map_creation(table[[nut_col, map_feature]].groupby(by = nut_col, as_index = False).quantile(map_q/100), 
+                                         nut_col, map_feature, map_color), use_container_width=True)
         except:
             st.warning('You have to select a NUTS id column in the selection box after \"Nut column\" to produce the map')
     
