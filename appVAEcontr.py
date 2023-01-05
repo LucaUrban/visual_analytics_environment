@@ -1093,7 +1093,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
 
             table_download = table.pivot(index = [con_checks_id_col], columns = [time_col], values = [con_checks_features])
-            table_download.columns.name = None
+            table_download.columns = table_download.columns.droplevel()
             t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
             if flag_radio == 'Yes':
                 table_download = table_download.merge(table[[con_checks_id_col] + descr_col + ['Class trend', flags_col, 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
