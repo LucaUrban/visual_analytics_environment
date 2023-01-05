@@ -1094,6 +1094,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             table_download = table.pivot(index = [con_checks_id_col], columns = [time_col], values = [con_checks_features])
             table_download.columns = table_download.columns.droplevel()
+            table_download.rename(columns = str, inplace = True)
             t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
             if flag_radio == 'Yes':
                 table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', flags_col, 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
