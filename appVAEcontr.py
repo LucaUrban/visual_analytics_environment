@@ -88,7 +88,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                            labels = {map_feature: map_feature})
         return map_box
     
-    def cr_dnwl_tab_cc(flags_col = '', table, con_checks_id_col, time_col, con_checks_features, descr_col):
+    def cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_features, descr_col, flags_col):
         table_download = table.pivot(index = [con_checks_id_col], columns = [time_col], values = [con_checks_features])
         table_download.columns = table_download.columns.droplevel()
         table_download.rename(columns = str, inplace = True)
@@ -910,7 +910,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             rupt_y_per = st.sidebar.number_input("Rupture years threshold", 5.0, 50.0, 25.0)
 
             con_checks_features = st.selectbox("Variable consistency checks:", col_mul)
-            flag_radio = st.radio("Do you want to use the flags:", ('Yes', 'No'))
+            flag_radio = st.radio("Do you want to use the flags:", ('Yes', 'No')); flags_col = ''
             if flag_radio == 'Yes':
                 left1, right1 = st.columns(2)
                 with left1:
@@ -1112,10 +1112,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             with right1:
                 descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
 
-            if flag_radio == 'Yes':
-                st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
-                                   data = cr_dnwl_tab_cc(flags_col, table, con_checks_id_col, time_col, con_checks_features, descr_col))
-            else: 
-                st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
-                                   data = cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_features, descr_col))
+            st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
+                               data = cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_features, descr_col, flags_col))
            
