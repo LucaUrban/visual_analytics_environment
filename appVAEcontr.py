@@ -88,7 +88,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                            labels = {map_feature: map_feature})
         return map_box
     
-    def cr_dnwl_tab_cc(table, flags_col = '', con_checks_id_col, time_col, con_checks_features, descr_col):
+    def cr_dnwl_tab_cc(flags_col = '', table, con_checks_id_col, time_col, con_checks_features, descr_col):
         table_download = table.pivot(index = [con_checks_id_col], columns = [time_col], values = [con_checks_features])
         table_download.columns = table_download.columns.droplevel()
         table_download.rename(columns = str, inplace = True)
@@ -1114,7 +1114,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             if flag_radio == 'Yes':
                 st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
-                                   data = cr_dnwl_tab_cc(table, flags_col, con_checks_id_col, time_col, con_checks_features, descr_col))
+                                   data = cr_dnwl_tab_cc(flags_col, table, con_checks_id_col, time_col, con_checks_features, descr_col))
             else: 
                 st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
                                    data = cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_features, descr_col))
