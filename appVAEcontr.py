@@ -396,10 +396,11 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         el_id_diff = st.selectbox("Id deltas timeseries", table[cross_index].unique())
 
         dff_diff = table[table[cross_index] == el_id_diff][[cross_time, cross_col]]
+        dff_diff.dropna(inplace = True)
         st.write(dff_diff)
-        fig_diff = go.Figure()
 
         if dff_diff.shape[0] > 1:
+            fig_diff = go.Figure()
             x = [[i, 0] for i in range(1, dff_diff.shape[0])]
             Y = [dff_diff[cross_col].iloc[dff_diff.shape[0] - i - 1] - dff_diff[cross_col].iloc[dff_diff.shape[0] - i] for i in range(1, dff_diff.shape[0])]
             reg = LinearRegression().fit(x, Y); coeff = reg.coef_; intercept = reg.intercept_
