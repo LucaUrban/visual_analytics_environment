@@ -339,6 +339,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             el_id = st.selectbox("Id time control charts", table[multi_index].unique(), 0)
 
             dff_tcc = table[table[multi_index] == el_id][[multi_time, multiXax_col, multiYax_col]]
+            st.write(dff_tcc)
             if len(list(dff_tcc[multi_time].unique())) < dff_tcc.shape[0]:
                 res = {multi_time: [], multiXax_col: [], multiYax_col: []}
                 for el in list(dff_tcc[multi_time].unique()):
