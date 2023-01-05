@@ -132,7 +132,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         map_color = st.sidebar.selectbox("Map color-palette", ['Portland', 'Picnic', 'Geyser'], 0)
 
         st.header("Geographical Analysis")
-
+        st.write(map_creation(table.groupby(by = nut_col).quantile(map_q/100))
         try:
             st.plotly_chart(map_creation(table.groupby(by = nut_col).quantile(map_q/100), nut_col, map_feature, map_color), use_container_width=True)
         except:
