@@ -1094,19 +1094,19 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             table_download = table.pivot(index = [con_checks_id_col], columns = [time_col], values = [con_checks_features])
             table_download.columns = table_download.columns.droplevel()
-            t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
+            t_col = [el for el in sorted(table[time_col].unique())]; list_fin = []
             if flag_radio == 'Yes':
                 table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', flags_col, 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
                                                      on = con_checks_id_col)
                 table_download.rename(columns = {'Class trend': 'Trend', flags_col: 'Existing flag', 'Prob inst ' + con_checks_features: 'Detected case'}, inplace = True)
-                df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Existing flag', 'Detected case', 'Rupt. years']
+                df_cols = descr_col + t_col + ['Variable', 'Trend', 'Existing flag', 'Detected case', 'Rupt. years']
             else:
                 table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
                                                      on = con_checks_id_col)
                 table_download.rename(columns = {'Class trend': 'Trend', 'Prob inst ' + con_checks_features: 'Detected case'}, inplace = True)
-                df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Detected case', 'Rupt. years']
+                df_cols = descr_col + t_col + ['Variable', 'Trend', 'Detected case', 'Rupt. years']
             table_download['Variable'] = con_checks_features
             st.write(table_download.columns)
-            #table_download = table_download[df_cols]
+            table_download = table_download[df_cols]
             st.download_button(label = "Download data with lables", data = table_download.to_csv(sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
            
