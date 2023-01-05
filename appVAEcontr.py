@@ -87,6 +87,26 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                            mapbox_style = "carto-positron", zoom = 3, center = {"lat": 47.4270826, "lon": 15.5322329}, opacity = 0.5, 
                                            labels = {map_feature: map_feature})
         return map_box
+    
+    def cr_dnwl_tab_cc(table, flags_col = '', con_checks_id_col, time_col, con_checks_features, descr_col):
+        table_download = table.pivot(index = [con_checks_id_col], columns = [time_col], values = [con_checks_features])
+        table_download.columns = table_download.columns.droplevel()
+        table_download.rename(columns = str, inplace = True)
+        t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
+        if flags_col != '':
+            table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', flags_col, 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
+                                                 on = con_checks_id_col)
+            table_download.rename(columns = {'Class trend': 'Trend', flags_col: 'Existing flag', 'Prob inst ' + con_checks_features: 'Detected case'}, inplace = True)
+            df_cols = descr_col + ['Variable'] + t_col + ['Trend', 'Existing flag', 'Detected case', 'Rupt. years']
+        else:
+            table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
+                                                 on = con_checks_id_col)
+            table_download.rename(columns = {'Class trend': 'Trend', 'Prob inst ' + con_checks_features: 'Detected case'}, inplace = True)
+            df_cols = descr_col + ['Variable'] + t_col + ['Trend', 'Detected case', 'Rupt. years']
+        table_download['Variable'] = con_checks_features
+        table_download = table_download[df_cols]
+        table_download.replace({'Trend': {i+1 : list(dict_trend.keys())[i] for i in range(len(list(dict_trend.keys())))}}, inplace = True)
+        return table_download.to_csv(sep = ';').encode('utf-8')
 
     # selection boxes columns
     col_an = [col for col in list(table) if len(table[col].unique()) < 10 or is_numeric_dtype(table[col])]
@@ -1092,22 +1112,10 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             with right1:
                 descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
 
-            table_download = table.pivot(index = [con_checks_id_col], columns = [time_col], values = [con_checks_features])
-            table_download.columns = table_download.columns.droplevel()
-            table_download.rename(columns = str, inplace = True)
-            t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
             if flag_radio == 'Yes':
-                table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', flags_col, 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
-                                                     on = con_checks_id_col)
-                table_download.rename(columns = {'Class trend': 'Trend', flags_col: 'Existing flag', 'Prob inst ' + con_checks_features: 'Detected case'}, inplace = True)
-                df_cols = descr_col + ['Variable'] + t_col + ['Trend', 'Existing flag', 'Detected case', 'Rupt. years']
-            else:
-                table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
-                                                     on = con_checks_id_col)
-                table_download.rename(columns = {'Class trend': 'Trend', 'Prob inst ' + con_checks_features: 'Detected case'}, inplace = True)
-                df_cols = descr_col + ['Variable'] + t_col + ['Trend', 'Detected case', 'Rupt. years']
-            table_download['Variable'] = con_checks_features
-            table_download = table_download[df_cols]
-            table_download.replace({'Trend': {i+1 : list(dict_trend.keys())[i] for i in range(len(list(dict_trend.keys())))}}, inplace = True)
-            st.download_button(label = "Download data with lables", data = table_download.to_csv(sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
+                st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
+                                   data = cr_dnwl_tab_cc(table, flags_col, con_checks_id_col, time_col, con_checks_features, descr_col))
+            else: 
+                st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
+                                   data = cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_features, descr_col))
            
