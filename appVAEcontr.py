@@ -354,7 +354,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     fig_tcc.update_xaxes(showgrid = False)
                     fig_tcc.add_annotation(x=0, y=0.85, xanchor='left', yanchor='bottom',
                                            xref = 'paper', yref = 'paper', showarrow=False, align = 'left',
-                                           bgcolor = 'rgba(255, 255, 255, 0.5)', text = '<b>{}</b><br>{}'.format(el_id, dff_tcc.columns[i+1]))
+                                           bgcolor = 'rgba(255, 255, 255, 0.5)', text = f'<b>{el_id}</b><br>{dff_tcc.columns[i+1]}')
                     fig_tcc.update_layout(xaxis_title = multi_time, yaxis_title = dff_tcc.columns[i+1])
                     fig_tcc.update_layout(height = 250, margin = {'l': 20, 'b': 30, 'r': 10, 't': 10})
 
