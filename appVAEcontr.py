@@ -704,7 +704,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 else:
                     table = pd.concat([table, pd.DataFrame(np.divide(np.nansum(table[ratio_num].values, axis = 1), np.nansum(table[ratio_den].values, axis = 1)), columns = [con_checks_feature])], axis = 1)
                 table.loc[table[table[con_checks_feature] == np.inf].index, con_checks_feature] = np.nan
-            flag_radio = st.radio("Do you want to use the flags:", ('Yes', 'No'))
+            flag_radio = st.radio("Do you want to use the flags:", ('Yes', 'No')); flags_col = ''
             if flag_radio == 'Yes':
                 left1, right1 = st.columns(2)
                 with left1:
@@ -857,46 +857,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 with right1:
                     descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
 
-                t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
-                if flag_radio == 'Yes':
-                    df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Existing flag', 'Detected case']
-                else:
-                    df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Detected case']
-                for inst in sorted(list(table[con_checks_id_col].unique())):
-                    df_inst = table[table[con_checks_id_col] == inst]
-                    list_el = [inst]
-                    for col in descr_col:
-                        list_el.append(df_inst[col].unique()[0])
-                    for t in t_col:
-                        if df_inst[df_inst[time_col] == int(t)].shape[0] != 0:
-                            list_el.append(df_inst[df_inst[time_col] == int(t)][con_checks_feature].values[0])
-                        else:
-                            list_el.append(np.nan)
-                    list_el.append(con_checks_feature)
-                    if df_inst['Class trend'].unique()[0] == 0:
-                        list_el.append('Impossible to calculate')
-                    else:
-                        list_el.append(list(dict_trend.keys())[df_inst['Class trend'].unique()[0]-1])
-                    if flag_radio == 'Yes':
-                        if notes_col != '-':
-                            if (inst not in ones) and (inst not in twos):
-                                list_el.append(0)
-                            if inst in ones:
-                                list_el.append(1)
-                            if inst in twos:
-                                list_el.append(2)
-                        else:
-                            if inst not in ones:
-                                list_el.append(0)
-                            else:
-                                list_el.append(1)
-                    list_el.append(df_inst['Prob inst ' + con_checks_feature].unique()[0])
-                    list_fin.append(list_el)
-                for i in range(len(list_fin)):
-                    if len(df_cols) != len(list_fin[i]):
-                        st.write(list_fin[i])
-                table_download = pd.DataFrame(list_fin, columns = df_cols)
-                st.download_button(label = "Download data with lables", data = table_download.to_csv(index = None, sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
+                st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
+                               data = cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_features, descr_col, flags_col))
             else:
                 st.warning('you have to choose a value for the field "Category selection column".')
         else:
