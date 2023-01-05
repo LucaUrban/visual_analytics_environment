@@ -339,15 +339,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             el_id = st.selectbox("Id time control charts", table[multi_index].unique(), 0)
 
             dff_tcc = table[table[multi_index] == el_id][[multi_time, multiXax_col, multiYax_col]]
-            st.write(dff_tcc)
-            if len(list(dff_tcc[multi_time].unique())) < dff_tcc.shape[0]:
-                res = {multi_time: [], multiXax_col: [], multiYax_col: []}
-                for el in list(dff_tcc[multi_time].unique()):
-                    res[multi_time].append(el)
-                    res[multiXax_col].append(dff_tcc[dff_tcc[multi_time] == el][multiXax_col].mean())
-                    res[multiYax_col].append(dff_tcc[dff_tcc[multi_time] == el][multiYax_col].mean())
-                dff_tcc = pd.DataFrame(data = res)
-            st.write(dff_tcc)
             titles = ['<b>{}</b><br>{}'.format(el_id, multiXax_col), '<b>{}</b><br>{}'.format(el_id, multiYax_col)]
 
             for i in range(2):
