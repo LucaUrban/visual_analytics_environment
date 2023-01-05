@@ -1096,12 +1096,12 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             table_download.columns = table_download.columns.droplevel()
             t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
             if flag_radio == 'Yes':
-                table_download = table_download.merge(table[[con_checks_id_col] + descr_col + ['Class trend', flags_col, 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
-                                                      on = con_checks_id_col)
+                table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', flags_col, 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
+                                                     on = con_checks_id_col)
                 df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Existing flag', 'Detected case', 'Rupt. years']
             else:
-                table_download = table_download.merge(table[[con_checks_id_col] + descr_col + ['Class trend', 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
-                                                      on = con_checks_id_col)
+                table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
+                                                     on = con_checks_id_col)
                 df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Detected case', 'Rupt. years']
             table_download['Variable'] = con_checks_features
             #table_download = table_download[df_cols]
