@@ -347,6 +347,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     res[multiXax_col].append(dff_tcc[dff_tcc[multi_time] == el][multiXax_col].mean())
                     res[multiYax_col].append(dff_tcc[dff_tcc[multi_time] == el][multiYax_col].mean())
                 dff_tcc = pd.DataFrame(data = res)
+            st.write(dff_tcc)
             titles = ['<b>{}</b><br>{}'.format(el_id, multiXax_col), '<b>{}</b><br>{}'.format(el_id, multiYax_col)]
 
             for i in range(2):
