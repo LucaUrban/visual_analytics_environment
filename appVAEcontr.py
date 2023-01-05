@@ -1098,7 +1098,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             if flag_radio == 'Yes':
                 table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', flags_col, 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
                                                      on = con_checks_id_col)
-                table_download.rename(columns = {'Class trend': 'Trend', flags_col: 'Existing flag, 'Prob inst ' + con_checks_features: 'Detected case'})
+                table_download.rename(columns = {'Class trend': 'Trend', flags_col: 'Existing flag', Prob inst ' + con_checks_features: 'Detected case'})
                 df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Existing flag', 'Detected case', 'Rupt. years']
             else:
                 table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
