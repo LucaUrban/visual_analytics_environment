@@ -348,8 +348,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     x_UCL = x_barbar + (1.88 * (dff_tcc[dff_tcc.columns[i+1]].quantile(0.95) - dff_tcc[dff_tcc.columns[i+1]].quantile(0.05)))
                     
                     fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = dff_tcc[dff_tcc.columns[i+1]], mode = 'lines+markers', name = "Value"))
-                    fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = [x_UCL for _ in range(len(x_el))], mode = "lines", name = "Upper Bound"))
-                    fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = [x_LCL for _ in range(len(x_el))], mode = "lines", name = "Lower Bound"))
+                    fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = [x_UCL for _ in range(len(dff_tcc[multi_time].shape[0]))], mode = "lines", name = "Upper Bound"))
+                    fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = [x_LCL for _ in range(len(dff_tcc[multi_time].shape[0]))], mode = "lines", name = "Lower Bound"))
 
                     fig_tcc.update_xaxes(showgrid = False)
                     fig_tcc.add_annotation(x=0, y=0.85, xanchor='left', yanchor='bottom',
