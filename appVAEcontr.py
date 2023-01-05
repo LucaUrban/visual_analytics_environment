@@ -351,15 +351,15 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     st.write([x_UCL, x_LCL]) 
 
                     x_el = [i for i in range(int(dff_tcc[multi_time].min()), int(dff_tcc[multi_time].max()) + 1)]
-                    fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = dff_tcc[list(dff_tcc)[i+1]], mode = 'lines+markers', name = "Value"))
-                    fig_tcc.add_trace(go.Scatter(x = x_el, y = [x_UCL for _ in range(len(x_el))], mode = "lines", name = "Upper Bound"))
-                    fig_tcc.add_trace(go.Scatter(x = x_el, y = [x_LCL for _ in range(len(x_el))], mode = "lines", name = "Lower Bound"))
+                    fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = dff_tcc[dff_tcc.columns[i+1]], mode = 'lines+markers', name = "Value"))
+                    fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = [x_UCL for _ in range(len(x_el))], mode = "lines", name = "Upper Bound"))
+                    fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = [x_LCL for _ in range(len(x_el))], mode = "lines", name = "Lower Bound"))
 
                     fig_tcc.update_xaxes(showgrid = False)
                     fig_tcc.add_annotation(x=0, y=0.85, xanchor='left', yanchor='bottom',
                                            xref = 'paper', yref = 'paper', showarrow=False, align = 'left',
                                            bgcolor = 'rgba(255, 255, 255, 0.5)', text = titles[i])
-                    fig_tcc.update_layout(xaxis_title = multi_time, yaxis_title = list(dff_tcc)[i+1])
+                    fig_tcc.update_layout(xaxis_title = multi_time, yaxis_title = dff_tcc.columns[i+1])
                     fig_tcc.update_layout(height = 250, margin = {'l': 20, 'b': 30, 'r': 10, 't': 10})
 
                     st.plotly_chart(fig_tcc, use_container_width=True)
