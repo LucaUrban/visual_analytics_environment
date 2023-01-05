@@ -1108,6 +1108,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 df_cols = descr_col + ['Variable'] + t_col + ['Trend', 'Detected case', 'Rupt. years']
             table_download['Variable'] = con_checks_features
             table_download = table_download[df_cols]
-            table_download.replace({'Trend': {v : k for k, v in dict_trend.items()}}, inplace = True)
+            table_download.replace({'Trend': {i+1 : list(dict_trend.keys())[i] for i in range(len(list(dict_trend.keys())))}, inplace = True)
             st.download_button(label = "Download data with lables", data = table_download.to_csv(sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
            
