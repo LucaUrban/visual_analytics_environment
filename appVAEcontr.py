@@ -1106,6 +1106,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 table_download.rename(columns = {'Class trend': 'Trend', 'Prob inst ' + con_checks_features: 'Detected case'}, inplace = True)
                 df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Detected case', 'Rupt. years']
             table_download['Variable'] = con_checks_features
+            st.write(table_download.columns)
             #table_download = table_download[df_cols]
             st.download_button(label = "Download data with lables", data = table_download.to_csv(sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
            
