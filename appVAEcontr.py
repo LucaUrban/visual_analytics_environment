@@ -158,8 +158,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 domain = {'x': [0, 1], 'y': [0, 1]},
                 gauge = {'axis': {'range': [table[monoVar_col].min(), table[monoVar_col].max()]},
                          'steps' : [
-                             {'range': [table[monoVar_col].min(), table[monoVar_col].quantile(q_gray_area/100)], 'color': "lightgray"},
-                             {'range': [table[monoVar_col].quantile(1 - q_gray_area/100), table[monoVar_col].max()], 'color': "gray"}]},
+                             {'range': [table[monoVar_col].min(), table[monoVar_col].quantile(0.05)], 'color': "lightgray"},
+                             {'range': [table[monoVar_col].quantile(1 - 0.05), table[monoVar_col].max()], 'color': "gray"}]},
                 title = {'text': "Gauge plot for the variable: " + monoVar_col}))
         if monoVar_type == "cdf plot":
             monoVar_plot = px.ecdf(table, x = monoVar_col, marginal = "box")
