@@ -396,6 +396,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         el_id_diff = st.selectbox("Id deltas timeseries", table[cross_index].unique())
 
         dff_diff = table[table[cross_index] == el_id_diff]
+        st.write(dff_diff)
         fig_diff = go.Figure()
 
         if dff_diff.shape[0] > 1:
