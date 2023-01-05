@@ -1092,42 +1092,17 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             with right1:
                 descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
 
+            table_download = data.pivot(index = [con_checks_id_col], columns = [time_col], values = [con_checks_features])
             t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
             if flag_radio == 'Yes':
+                table_download = table_download.merge(table[[con_checks_id_col] + descr_col + ['Class trend', flags_col, 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
+                                                      on = con_checks_id_col)
                 df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Existing flag', 'Detected case', 'Rupt. years']
             else:
+                table_download = table_download.merge(table[[con_checks_id_col] + descr_col + ['Class trend', 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
+                                                      on = con_checks_id_col)
                 df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Detected case', 'Rupt. years']
-            for inst in sorted(list(table[con_checks_id_col].unique())):
-                df_inst = table[table[con_checks_id_col] == inst]
-                list_el = [inst]
-                for col in descr_col:
-                    list_el.append(df_inst[col].unique()[0])
-                for t in t_col:
-                    if df_inst[df_inst[time_col] == int(t)].shape[0] != 0:
-                        list_el.append(df_inst[df_inst[time_col] == int(t)][con_checks_features].values[0])
-                    else:
-                        list_el.append(np.nan)
-                list_el.append(con_checks_features)
-                if df_inst['Class trend'].unique()[0] == 0:
-                    list_el.append('Impossible to calculate')
-                else:
-                    list_el.append(list(dict_trend.keys())[df_inst['Class trend'].unique()[0]-1])
-                if flag_radio == 'Yes':
-                    if notes_col != '-':
-                        if (inst not in ones) and (inst not in twos):
-                            list_el.append(0)
-                        if inst in ones:
-                            list_el.append(1)
-                        if inst in twos:
-                            list_el.append(2)
-                    else:
-                        if inst not in ones:
-                            list_el.append(0)
-                        else:
-                            list_el.append(1)
-                list_el.append(df_inst['Prob inst ' + con_checks_features].unique()[0])
-                list_el.append(df_inst['Rupt. years'].unique()[0])
-                list_fin.append(list_el)
-            table_download = pd.DataFrame(list_fin, columns = df_cols)
+            table_download['Variable'] = con_checks_features
+            table_download = table_download[df_cols]
             st.download_button(label = "Download data with lables", data = table_download.to_csv(index = None, sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
            
