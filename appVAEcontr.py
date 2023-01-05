@@ -396,14 +396,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         el_id_diff = st.selectbox("Id deltas timeseries", table[cross_index].unique())
 
         dff_diff = table[table[cross_index] == el_id_diff]
-        if len(list(dff_diff[cross_time].unique())) < dff_diff.shape[0]:
-            res = {cross_time: [], cross_col: []}
-            for el in list(dff[cross_time].unique()):
-                res[cross_time].append(el); res[cross_col].append(dff_diff[dff_diff[cross_time] == el][cross_col].mean())
-            dff_diff = pd.DataFrame(data = res)
-        title = '<b>{}</b><br>{}'.format(el_id_diff, cross_col)
-
         fig_diff = go.Figure()
+
         if dff_diff.shape[0] > 1:
             x = [[i, 0] for i in range(1, dff_diff.shape[0])]
             Y = [dff_diff[cross_col].iloc[dff_diff.shape[0] - i - 1] - dff_diff[cross_col].iloc[dff_diff.shape[0] - i] for i in range(1, dff_diff.shape[0])]
@@ -415,9 +409,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                      y = [intercept + (i * coeff[0]) for i in range(dff_diff.shape[0])], 
                                      mode = 'lines', name = "Regression"))
             fig_diff.update_xaxes(showgrid=False)
-            fig_diff.add_annotation(x=0, y=0.85, xanchor='left', yanchor='bottom',
-                               xref='paper', yref='paper', showarrow=False, align='left',
-                               bgcolor='rgba(255, 255, 255, 0.5)', text = title)
+            fig_diff.add_annotation(x=0, y=0.85, xanchor='left', yanchor='bottom', xref='paper', yref='paper', showarrow=False, align='left',
+                                    bgcolor='rgba(255, 255, 255, 0.5)', text = f'<b>{el_id_diff}</b><br>{cross_col}')
             fig_diff.update_layout(xaxis_title = cross_time, yaxis_title = list(dff_diff)[1])
             fig_diff.update_layout(height = 400)
 
