@@ -397,7 +397,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
         dff_diff = table[table[cross_index] == el_id_diff][[cross_time, cross_col]]
         dff_diff.dropna(inplace = True)
-        st.write(dff_diff)
 
         if dff_diff.shape[0] > 1:
             fig_diff = go.Figure()
