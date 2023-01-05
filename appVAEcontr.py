@@ -344,13 +344,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             for i in range(2):
                 fig_tcc = go.Figure()
                 if dff_tcc.shape[0] != 0:
-                    x_bar = []
-                    for inst in table[multi_index].unique():
-                        inst_data = table[table[multi_index] == inst][list(dff_tcc)[i+1]]
-                        if inst_data.count() != 0:
-                            x_bar.append(inst_data.mean())
-
-                    x_barbar = round(sum(x_bar)/len(x_bar), 3)
+                    x_barbar = table.groupby(by = multi_index).mean()[dff_tcc.columns[i+1]].mean()
 
                     x_LCL = x_barbar - (1.88 * (dff_tcc[list(dff_tcc)[i+1]].quantile(0.95) - dff_tcc[list(dff_tcc)[i+1]].quantile(0.05)))
                     x_UCL = x_barbar + (1.88 * (dff_tcc[list(dff_tcc)[i+1]].quantile(0.95) - dff_tcc[list(dff_tcc)[i+1]].quantile(0.05)))
