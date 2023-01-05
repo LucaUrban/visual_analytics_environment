@@ -339,8 +339,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             el_id = st.selectbox("Id time control charts", table[multi_index].unique(), 0)
 
             dff_tcc = table[table[multi_index] == el_id][[multi_time, multiXax_col, multiYax_col]]
-            titles = ['<b>{}</b><br>{}'.format(el_id, multiXax_col), '<b>{}</b><br>{}'.format(el_id, multiYax_col)]
-
             for i in range(2):
                 fig_tcc = go.Figure()
                 if dff_tcc.shape[0] != 0:
@@ -348,9 +346,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
                     x_LCL = x_barbar - (1.88 * (dff_tcc[dff_tcc.columns[i+1]].quantile(0.95) - dff_tcc[dff_tcc.columns[i+1]].quantile(0.05)))
                     x_UCL = x_barbar + (1.88 * (dff_tcc[dff_tcc.columns[i+1]].quantile(0.95) - dff_tcc[dff_tcc.columns[i+1]].quantile(0.05)))
-                    st.write([x_UCL, x_LCL]) 
-
-                    x_el = [i for i in range(int(dff_tcc[multi_time].min()), int(dff_tcc[multi_time].max()) + 1)]
+                    
                     fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = dff_tcc[dff_tcc.columns[i+1]], mode = 'lines+markers', name = "Value"))
                     fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = [x_UCL for _ in range(len(x_el))], mode = "lines", name = "Upper Bound"))
                     fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = [x_LCL for _ in range(len(x_el))], mode = "lines", name = "Lower Bound"))
@@ -358,7 +354,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     fig_tcc.update_xaxes(showgrid = False)
                     fig_tcc.add_annotation(x=0, y=0.85, xanchor='left', yanchor='bottom',
                                            xref = 'paper', yref = 'paper', showarrow=False, align = 'left',
-                                           bgcolor = 'rgba(255, 255, 255, 0.5)', text = titles[i])
+                                           bgcolor = 'rgba(255, 255, 255, 0.5)', text = '<b>{}</b><br>{}'.format(el_id, dff_tcc.columns[i+1]))
                     fig_tcc.update_layout(xaxis_title = multi_time, yaxis_title = dff_tcc.columns[i+1])
                     fig_tcc.update_layout(height = 250, margin = {'l': 20, 'b': 30, 'r': 10, 't': 10})
 
