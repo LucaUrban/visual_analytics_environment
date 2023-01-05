@@ -346,8 +346,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 if dff_tcc.shape[0] != 0:
                     x_barbar = table.groupby(by = multi_index).mean()[dff_tcc.columns[i+1]].mean()
 
-                    x_LCL = x_barbar - (1.88 * (dff_tcc[list(dff_tcc)[i+1]].quantile(0.95) - dff_tcc[list(dff_tcc)[i+1]].quantile(0.05)))
-                    x_UCL = x_barbar + (1.88 * (dff_tcc[list(dff_tcc)[i+1]].quantile(0.95) - dff_tcc[list(dff_tcc)[i+1]].quantile(0.05)))
+                    x_LCL = x_barbar - (1.88 * (dff_tcc[dff_tcc.columns[i+1]].quantile(0.95) - dff_tcc[dff_tcc.columns[i+1]].quantile(0.05)))
+                    x_UCL = x_barbar + (1.88 * (dff_tcc[dff_tcc.columns[i+1]].quantile(0.95) - dff_tcc[dff_tcc.columns[i+1]].quantile(0.05)))
+                    st.write([x_UCL, x_LCL]) 
 
                     x_el = [i for i in range(int(dff_tcc[multi_time].min()), int(dff_tcc[multi_time].max()) + 1)]
                     fig_tcc.add_trace(go.Scatter(x = dff_tcc[multi_time], y = dff_tcc[list(dff_tcc)[i+1]], mode = 'lines+markers', name = "Value"))
