@@ -1105,5 +1105,5 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 df_cols = [con_checks_id_col] + descr_col + t_col + ['Variable', 'Trend', 'Detected case', 'Rupt. years']
             table_download['Variable'] = con_checks_features
             #table_download = table_download[df_cols]
-            st.download_button(label = "Download data with lables", data = table_download.to_csv(index = None, sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
+            st.download_button(label = "Download data with lables", data = table_download.to_csv(sep = ';').encode('utf-8'), file_name = 'result.csv', mime = 'text/csv')
            
