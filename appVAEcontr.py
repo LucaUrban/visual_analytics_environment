@@ -888,7 +888,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             # computation of DV and problematic institutions
             df_DV['Deltas'] = df_DV[con_checks_feature].diff()
-            df_DV.drop(df.groupby(con_checks_id_col).head(1).index, axis=0, inplace = True)
+            df_DV.drop(df_DV.groupby(con_checks_id_col).head(1).index, axis=0, inplace = True)
             df_pos = df_DV[df_DV['Deltas'] > 0][[con_checks_id_col, 'Deltas']].groupby(con_checks_id_col).sum()
             df_neg = df_DV[df_DV['Deltas'] < 0][[con_checks_id_col, 'Deltas']].groupby(con_checks_id_col).sum()
             df_fin = df_pos.merge(df_neg, on = con_checks_id_col)
