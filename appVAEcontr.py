@@ -839,6 +839,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 st.warning('you have to choose a value for the field "Category selection column".')
         else:
             con_checks_id_col = st.sidebar.selectbox("Index col", table.columns, 0)
+            time_col = st.selectbox("Time column", table.columns)
             country_sel_col = st.sidebar.selectbox("Country col", ['-'] + list(table.columns), 0)
             cat_sel_col = st.sidebar.selectbox("Category col", ['-'] + list(table.columns), 0)
             retain_quantile = st.sidebar.number_input("Quantile to exclude from the calculation (S1)", 1.0, 10.0, 2.0, 0.1)
@@ -858,7 +859,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             
             # creation of the datasets variable for the geomtric mean and DV computation
             table['Class trend'] = 0; table['Rupt. years'] = ''
-            df_DV = table[[con_checks_id_col, 'Reference year', con_checks_feature]].sort_values(by = [con_checks_id_col, 'Reference year'], ascending = [True, False])
+            df_DV = table[[con_checks_id_col, time_col, con_checks_feature]].sort_values(by = [con_checks_id_col, time_col], ascending = [True, False])
             df_DV = df_DV[~pd.isna(df_DV[con_checks_feature])]
             df_gm = df_DV[df_DV[con_checks_feature] != 0][[con_checks_id_col, con_checks_feature]]
             
@@ -1030,18 +1031,14 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
             trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
             try:
-                line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_feature, 'Reference year']], x = 'Reference year', y = con_checks_feature)
+                line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_feature, time_col]], x = time_col, y = con_checks_feature)
                 line_trend_ch_inst.update_yaxes(range = [0, max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values) + (.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values))])
                 st.plotly_chart(line_trend_ch_inst, use_container_width=True)
             except:
                 st.warning('To produce the plot select a different combination of trend type and institution')
             
             st.write('To download the results select a time variable and then click the Download data button')
-            left1, right1 = st.columns(2)
-            with left1:
-                time_col = st.selectbox("Time variable:", table.columns)
-            with right1:
-                descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
+            descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
 
             st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
                                data = cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_feature, descr_col, flags_col))
