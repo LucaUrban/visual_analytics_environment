@@ -897,6 +897,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             df_fin = df_fin.merge(df_gm, on = con_checks_id_col)
             df_fin['DV'] = df_fin['Delta prod'] / df_fin['Geo Mean']
             df_fin = df_fin[df_fin['DV'] > df_fin['DV'].quantile(flag_issue_quantile/100)]
+            ck_flags = list(df_fin.index)
 
             for el in table[country_sel_col].unique():
                 if len(el) > 2:
@@ -907,12 +908,12 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
              
             if cat_sel_col == '-':
                 DV_fin_res = np.zeros((1, len(list_countries)), dtype = int)
-                for flag in df_fin.index:
+                for flag in ck_flags:
                     DV_fin_res[0, list_countries.index(flag[:2])] += 1
             else:
                 list_un_cat = list(table[cat_sel_col].unique())
                 DV_fin_res = np.zeros((len(list_un_cat), len(list_countries)), dtype = int)
-                for flag in df_fin.index:
+                for flag in ck_flags:
                     DV_fin_res[list_un_cat.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0]), list_countries.index(flag[:2])] += 1
 
             table['Prob inst ' + con_checks_feature] = 0; list_prob_cases = []
@@ -984,15 +985,15 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 else:
                     ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
                 if flag_notes_on:
-                    summ_table = pd.DataFrame([[str(len(twos.intersection(dict_check_flags))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(dict_check_flags))) / len(twos), 2)) + '%'], 
-                                               [str(len(dict_check_flags)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(dict_check_flags) / len(ones.union(twos))), 2)) + '%'], 
-                                               [str(len(dict_check_flags.difference(ones.union(twos)))), str(round((100 * len(dict_check_flags.difference(ones.union(twos)))) / len(dict_check_flags), 2)) + '%']], 
+                    summ_table = pd.DataFrame([[str(len(twos.intersection(ck_flags))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(ck_flags))) / len(twos), 2)) + '%'], 
+                                               [str(len(ck_flags)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(ck_flags) / len(ones.union(twos))), 2)) + '%'], 
+                                               [str(len(ck_flags.difference(ones.union(twos)))), str(round((100 * len(ck_flags.difference(ones.union(twos)))) / len(ck_flags), 2)) + '%']], 
                                                columns = ['Absolute Values', 'In percentage'], 
                                                index = ['Accuracy', 'new/prev cases', 'Extra cases'])
                 else:
-                    summ_table = pd.DataFrame([[str(len(ones.intersection(dict_check_flags))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(dict_check_flags))) / len(ones), 2)) + '%'], 
-                                               [str(len(dict_check_flags)) + ' / ' + str(len(ones)), str(round(100 * (len(dict_check_flags) / len(ones)), 2)) + '%'], 
-                                               [str(len(dict_check_flags.difference(ones))), str(round((100 * len(dict_check_flags.difference(ones))) / len(dict_check_flags), 2)) + '%']], 
+                    summ_table = pd.DataFrame([[str(len(ones.intersection(ck_flags))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(ck_flags))) / len(ones), 2)) + '%'], 
+                                               [str(len(ck_flags)) + ' / ' + str(len(ones)), str(round(100 * (len(ck_flags) / len(ones)), 2)) + '%'], 
+                                               [str(len(ck_flags.difference(ones))), str(round((100 * len(ck_flags.difference(ones))) / len(ck_flags), 2)) + '%']], 
                                                columns = ['Absolute Values', 'In percentage'], 
                                                index = ['Accuracy', 'new/prev cases', 'Extra cases'])
                 st.table(summ_table)
