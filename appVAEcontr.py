@@ -865,6 +865,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             # trend classification
             for id_inst in df_gm.index:
                 inst = df_gm[df_gm[con_checks_id_col] == id_inst][con_checks_feature].values[::-1]
+                st.write(inst)
                 if inst.shape[0] > 3:
                     mann_kend_res = mk.original_test(inst)
                     trend, p, tau = mann_kend_res.trend, mann_kend_res.p, mann_kend_res.Tau
