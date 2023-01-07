@@ -895,7 +895,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             df_fin['Delta prod'] = (df_fin['Deltas_x'] * df_fin['Deltas_y']).abs()
             df_fin = df_fin.merge(df_gm, on = con_checks_id_col)
             df_fin['DV'] = df_fin['Delta prod'] / df_fin['Geo Mean']
-            df_fin[df_fin['DV'] > df_fin['DV'].quantile(flag_issue_quantile/100)]
+            df_fin = df_fin[df_fin['DV'] > df_fin['DV'].quantile(flag_issue_quantile/100)]
 
             for el in table[country_sel_col].unique():
                 if len(el) > 2:
@@ -1003,7 +1003,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 st.table(pd.DataFrame(list_prob_cases, columns = ['Variable', 'Country', 'Category', '% Value', 'Absolute values']))
             
             dict_trend = {'Strong decrease': [], 'Weak decrease': [], 'Undetermined trend': [], 'Weak increase': [], 'Strong increase': []}; set_trend = set()
-            for inst in dict_check_flags:
+            for inst in df_fin.index:
                 class_tr = int(table[table[con_checks_id_col] == inst]['Class trend'].unique()[0])
                 if class_tr != 0:
                     dict_trend[list(dict_trend.keys())[class_tr-1]].append(inst)
