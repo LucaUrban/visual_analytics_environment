@@ -1029,9 +1029,12 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             
             trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
             trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
-            line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_feature, 'Reference year']], x = 'Reference year', y = con_checks_feature)
-            line_trend_ch_inst.update_yaxes(range = [0, max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values) + (.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values))])
-            st.plotly_chart(line_trend_ch_inst, use_container_width=True)
+            try:
+                line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_feature, 'Reference year']], x = 'Reference year', y = con_checks_feature)
+                line_trend_ch_inst.update_yaxes(range = [0, max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values) + (.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values))])
+                st.plotly_chart(line_trend_ch_inst, use_container_width=True)
+            except:
+                st.warning('To produce the plot select a different combination of trend type and institution')
             
             st.write('To download the results select a time variable and then click the Download data button')
             left1, right1 = st.columns(2)
