@@ -847,7 +847,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             p_value_trend_per = st.sidebar.number_input("P-value percentage trend estimation", 5.0, 50.0, 10.0)
             rupt_y_per = st.sidebar.number_input("Rupture years threshold", 5.0, 50.0, 25.0)
 
-            con_checks_features = st.selectbox("Variable consistency checks:", col_mul)
+            con_checks_feature = st.selectbox("Variable consistency checks:", col_mul)
             flag_radio = st.radio("Do you want to use the flags:", ('Yes', 'No')); flags_col = ''
             if flag_radio == 'Yes':
                 left1, right1 = st.columns(2)
@@ -855,20 +855,18 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     flags_col = st.selectbox("Flag variable", table.columns)
                 with right1:
                     notes_col = st.selectbox("Notes variable", ['-'] + list(table.columns))
-                
-            res_ind = dict(); table['Class trend'] = 0; table['Rupt. years'] = ''
-            for id_inst in table[con_checks_id_col].unique():
-                # calculations of the geometric mean
-                inst = table[table[con_checks_id_col] == id_inst][con_checks_features].values[::-1]
-                geo_mean_vec = np.delete(inst, np.where((inst == 0) | (np.isnan(inst))))
-                if geo_mean_vec.shape[0] != 0:
-                    res_ind[id_inst] = math.pow(math.fabs(np.prod(geo_mean_vec)), 1/geo_mean_vec.shape[0])
-                else:
-                    res_ind[id_inst] = np.nan
-                    
-                # trend classification
-                if geo_mean_vec.shape[0] > 3:
-                    mann_kend_res = mk.original_test(geo_mean_vec)
+            
+            # creation of the datasets variable for the geomtric mean and DV computation
+            table['Class trend'] = 0; table['Rupt. years'] = ''
+            df_DV = table[[con_checks_id_col, 'Reference year', con_checks_feature]].sort_values(by = [con_checks_id_col, 'Reference year'], ascending = [True, False])
+            df_DV = df_DV[~pd.isna(df_DV[con_checks_feature])]
+            df_gm = df_DV[df_DV[con_checks_feature] != 0][[con_checks_id_col, con_checks_feature]]
+            
+            # trend classification
+            for id_inst in df_gm.index:
+                inst = df_gm[df_gm[con_checks_id_col] == id_inst][con_checks_feature].values[::-1]
+                if inst.shape[0] > 3:
+                    mann_kend_res = mk.original_test(inst)
                     trend, p, tau = mann_kend_res.trend, mann_kend_res.p, mann_kend_res.Tau
                     if trend == 'increasing':
                         table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 5
@@ -882,30 +880,22 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                         if p > p_value_trend_per/100:
                             table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
             
-            indices = pd.DataFrame(res_ind.values(), index = res_ind.keys(), columns = [con_checks_features])
-            indices.drop(index = set(indices[(pd.isna(indices[con_checks_features])) | (indices[con_checks_features] <= indices.quantile(retain_quantile/100).values[0])].index), axis = 0, inplace = True)
+            # computation of the geometric mean
+            df_gm['Occ'] = df_gm.groupby(con_checks_id_col)[con_checks_id_col].transform('count')
+            df_gm['Geo Mean'] = df_gm[con_checks_feature] ** (1 / df_gm['Occ'])
+            df_gm = df_gm.groupby(by = 'ETER ID').prod()['Geo Mean']
+            df_gm = df_gm[df_gm >= df_gm.quantile(retain_quantile/100)]
 
-            res = dict(); list_prob_cases = []
-            # does the calculation with the delta+ and delta-minus for the multiannual checks and stores it into a dictionary 
-            for id_inst in indices.index.values:
-                inst = table[(table[con_checks_id_col] == id_inst) & (-pd.isna(table[con_checks_features]))][con_checks_features].values
-                num_row = len(inst); delta_pos = list(); delta_neg = list()
-                for i in range(1, num_row):
-                    if inst[num_row - i - 1] - inst[num_row - i] < 0:
-                        delta_neg.append(round(inst[num_row - i - 1] - inst[num_row - i], 2))
-                    else:
-                        delta_pos.append(round(inst[num_row - i - 1] - inst[num_row - i], 2))
-                res[id_inst] = [delta_pos, delta_neg]
-
-            DV = dict() # the dictionary in wich we'll store all the DV and further the DM values for the variability from years
-            for key, value in res.items():
-                res_par = 0
-                if len(value[0]) != 0 and len(value[1]) != 0:
-                    res_par = sum(value[0]) * sum(value[1])
-                DV[key] = round(math.fabs(res_par)/indices[con_checks_features][key] ** 1.5, 3)
-
-                DV_df = pd.DataFrame(DV.values(), index = DV.keys(), columns = [con_checks_features])
-                dict_check_flags = set(DV_df[DV_df[con_checks_features] >= DV_df[con_checks_features].quantile(flag_issue_quantile/100)].index)
+            # computation of DV and problematic institutions
+            df_DV['Deltas'] = df_DV[con_checks_feature].diff()
+            df_DV.drop(df.groupby(con_checks_id_col).head(1).index, axis=0, inplace = True)
+            df_pos = df_DV[df_DV['Deltas'] > 0][[con_checks_id_col, 'Deltas']].groupby(con_checks_id_col).sum()
+            df_neg = df_DV[df_DV['Deltas'] < 0][[con_checks_id_col, 'Deltas']].groupby(con_checks_id_col).sum()
+            df_fin = df_pos.merge(df_neg, on = con_checks_id_col)
+            df_fin['Delta prod'] = (df_fin['Deltas_x'] * df_fin['Deltas_y']).abs()
+            df_fin = df_fin.merge(df_gm, on = con_checks_id_col)
+            df_fin['DV'] = df_fin['Delta prod'] / df_fin['Geo Mean']
+            df_fin[df_fin['DV'] > df_fin['DV'].quantile(flag_issue_quantile/100)]
 
             for el in table[country_sel_col].unique():
                 if len(el) > 2:
@@ -916,16 +906,16 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
              
             if cat_sel_col == '-':
                 DV_fin_res = np.zeros((1, len(list_countries)), dtype = int)
-                for flag in dict_check_flags:
+                for flag in df_fin.index:
                     DV_fin_res[0, list_countries.index(flag[:2])] += 1
             else:
                 list_un_cat = list(table[cat_sel_col].unique())
                 DV_fin_res = np.zeros((len(list_un_cat), len(list_countries)), dtype = int)
-                for flag in dict_check_flags:
+                for flag in df_fin.index:
                     DV_fin_res[list_un_cat.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0]), list_countries.index(flag[:2])] += 1
 
             table['Prob inst ' + con_checks_features] = 0
-            table.loc[table[table[con_checks_id_col].isin(dict_check_flags)].index, 'Prob inst ' + con_checks_features] = 1
+            table.loc[table[table[con_checks_id_col].isin(df_fin.index)].index, 'Prob inst ' + con_checks_features] = 1
                         
             if cat_sel_col == '-':
                 DV_fin_res = np.append(DV_fin_res, np.array([np.sum(DV_fin_res, axis = 1)]), axis = 1)
