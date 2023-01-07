@@ -839,7 +839,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 st.warning('you have to choose a value for the field "Category selection column".')
         else:
             con_checks_id_col = st.sidebar.selectbox("Index col", table.columns, 0)
-            time_col = st.selectbox("Time column", table.columns)
+            time_col = st.sidebar.selectbox("Time column", table.columns)
             country_sel_col = st.sidebar.selectbox("Country col", ['-'] + list(table.columns), 0)
             cat_sel_col = st.sidebar.selectbox("Category col", ['-'] + list(table.columns), 0)
             retain_quantile = st.sidebar.number_input("Quantile to exclude from the calculation (S1)", 1.0, 10.0, 2.0, 0.1)
