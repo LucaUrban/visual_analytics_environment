@@ -897,7 +897,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             df_fin = df_fin.merge(df_gm, on = con_checks_id_col)
             df_fin['DV'] = df_fin['Delta prod'] / df_fin['Geo Mean']
             df_fin = df_fin[df_fin['DV'] > df_fin['DV'].quantile(flag_issue_quantile/100)]
-            ck_flags = list(df_fin.index)
+            ck_flags = set(df_fin.index)
 
             for el in table[country_sel_col].unique():
                 if len(el) > 2:
