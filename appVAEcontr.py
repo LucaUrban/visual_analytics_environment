@@ -914,7 +914,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 for flag in df_fin.index:
                     DV_fin_res[list_un_cat.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0]), list_countries.index(flag[:2])] += 1
 
-            table['Prob inst ' + con_checks_feature] = 0
+            table['Prob inst ' + con_checks_feature] = 0; list_prob_cases = []
             table.loc[table[table[con_checks_id_col].isin(df_fin.index)].index, 'Prob inst ' + con_checks_feature] = 1
                         
             if cat_sel_col == '-':
