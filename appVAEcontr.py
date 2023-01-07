@@ -914,8 +914,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 for flag in df_fin.index:
                     DV_fin_res[list_un_cat.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0]), list_countries.index(flag[:2])] += 1
 
-            table['Prob inst ' + con_checks_features] = 0
-            table.loc[table[table[con_checks_id_col].isin(df_fin.index)].index, 'Prob inst ' + con_checks_features] = 1
+            table['Prob inst ' + con_checks_feature] = 0
+            table.loc[table[table[con_checks_id_col].isin(df_fin.index)].index, 'Prob inst ' + con_checks_feature] = 1
                         
             if cat_sel_col == '-':
                 DV_fin_res = np.append(DV_fin_res, np.array([np.sum(DV_fin_res, axis = 1)]), axis = 1)
@@ -937,10 +937,10 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                             num_app = 0; list_fin_res[row][i] = '0\n(0%)'
                         if i != len(list_fin_res[row])-1 and num_app >= prob_cases_per:
                             if row != len(list_fin_res)-1:
-                                list_prob_cases.append([con_checks_features, list_countries[i], str(num_app) + '%', str(num) + ' / ' + str(den)])
+                                list_prob_cases.append([con_checks_feature, list_countries[i], str(num_app) + '%', str(num) + ' / ' + str(den)])
                             else:
                                 list_prob_cases.append(['Total', list_countries[i], str(num_app) + '%', str(num) + ' / ' + str(den)])
-                table_fin_res = pd.DataFrame(list_fin_res, index = [con_checks_features, 'Total'], columns = list_countries + ['Total'])
+                table_fin_res = pd.DataFrame(list_fin_res, index = [con_checks_feature, 'Total'], columns = list_countries + ['Total'])
             else:
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
@@ -965,10 +965,10 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                             num_app = 0; list_fin_res[row][i] = '0\n(0%)'
                         if i != len(list_fin_res[row])-1 and num_app >= prob_cases_per:
                             if row != len(list_fin_res)-1:
-                                list_prob_cases.append([con_checks_features, list_countries[i], list_un_cat[int(row % len(list_un_cat))], str(num_app) + '%', str(num) + ' / ' + str(den)])
+                                list_prob_cases.append([con_checks_feature, list_countries[i], list_un_cat[int(row % len(list_un_cat))], str(num_app) + '%', str(num) + ' / ' + str(den)])
                             else:
                                 list_prob_cases.append(['Total', list_countries[i], 'All categories', str(num_app) + '%', str(num) + ' / ' + str(den)])
-                table_fin_res = pd.DataFrame(list_fin_res, index = [con_checks_features + ' (' + str(cat) + ')' for cat in list_un_cat] + ['Total'], columns = list_countries + ['Total'])
+                table_fin_res = pd.DataFrame(list_fin_res, index = [con_checks_feature + ' (' + str(cat) + ')' for cat in list_un_cat] + ['Total'], columns = list_countries + ['Total'])
 
             flag_notes_on = False
             if flag_radio == 'Yes':
@@ -1029,8 +1029,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             
             trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
             trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
-            line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_features, 'Reference year']], x = 'Reference year', y = con_checks_features)
-            line_trend_ch_inst.update_yaxes(range = [0, max(table[table[con_checks_id_col] == trend_inst][con_checks_features].values) + (.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_features].values))])
+            line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_feature, 'Reference year']], x = 'Reference year', y = con_checks_feature)
+            line_trend_ch_inst.update_yaxes(range = [0, max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values) + (.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values))])
             st.plotly_chart(line_trend_ch_inst, use_container_width=True)
             
             st.write('To download the results select a time variable and then click the Download data button')
@@ -1041,5 +1041,5 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
 
             st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
-                               data = cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_features, descr_col, flags_col))
+                               data = cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_feature, descr_col, flags_col))
            
