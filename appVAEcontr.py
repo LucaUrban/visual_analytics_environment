@@ -911,7 +911,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 DV_fin_res = np.zeros((len(list_un_cat), len(list_countries)), dtype = int)
                 for flag in ck_flags:
                     DV_fin_res[list_un_cat.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0]), 
-                               list_countries..index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0])] += 1
+                               list_countries.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0])] += 1
 
             table['Prob inst ' + con_checks_feature] = 0; list_prob_cases = []
             table.loc[table[table[con_checks_id_col].isin(df_fin.index)].index, 'Prob inst ' + con_checks_feature] = 1
