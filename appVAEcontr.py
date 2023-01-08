@@ -900,25 +900,12 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             df_fin = df_fin.merge(df_gm, on = con_checks_id_col)
             df_fin['DV'] = df_fin['Delta prod'] / df_fin['Geo Mean']
             df_fin = df_fin[df_fin['DV'] > df_fin['DV'].quantile(flag_issue_quantile/100)]
-            ck_flags = set(df_fin.index)
+            ck_flags = set(df_fin.index); list_prob_cases = []
 
             # creation od the result tables
             list_countries = list(table[table[con_checks_id_col].isin(ck_flags)][country_sel_col].unique())
             if cat_sel_col == '-':
-                DV_fin_res = np.zeros((1, len(list_countries)), dtype = int)
-                for i in range(len(list_countries)):
-                    DV_fin_res[0, i] = len(set(table[table[country_sel_col] == list_countries[i]][con_checks_id_col]).intersection(ck_flags))
-            else:
-                list_un_cat = list(table[table[con_checks_id_col].isin(ck_flags)][cat_sel_col].unique())
-                DV_fin_res = np.zeros((len(list_un_cat), len(list_countries)), dtype = int)
-                for flag in ck_flags:
-                    DV_fin_res[list_un_cat.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0]), 
-                               list_countries.index(table[table[con_checks_id_col] == flag][country_sel_col].unique()[0])] += 1
-
-            table['Prob inst ' + con_checks_feature] = 0; list_prob_cases = []
-            table.loc[table[table[con_checks_id_col].isin(df_fin.index)].index, 'Prob inst ' + con_checks_feature] = 1
-                        
-            if cat_sel_col == '-':
+                DV_fin_res = np.array([len(set(table[table[country_sel_col] == country][con_checks_id_col]).intersection(ck_flags)) for country in list_countries]) 
                 DV_fin_res = np.append(DV_fin_res, np.array([np.sum(DV_fin_res, axis = 1)]), axis = 1)
                 DV_fin_res = np.append(DV_fin_res, DV_fin_res, axis = 0)
                 list_fin_res = DV_fin_res.tolist()
@@ -940,6 +927,12 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                 list_prob_cases.append(['Total', list_countries[i], str(num_app) + '%', str(num) + ' / ' + str(den)])
                 table_fin_res = pd.DataFrame(list_fin_res, index = [con_checks_feature, 'Total'], columns = list_countries + ['Total'])
             else:
+                list_un_cat = list(table[table[con_checks_id_col].isin(ck_flags)][cat_sel_col].unique())
+                DV_fin_res = np.zeros((len(list_un_cat), len(list_countries)), dtype = int)
+                for flag in ck_flags:
+                    DV_fin_res[list_un_cat.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0]), 
+                               list_countries.index(table[table[con_checks_id_col] == flag][country_sel_col].unique()[0])] += 1
+                           
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
                 list_fin_res = DV_fin_res.tolist()
@@ -964,6 +957,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                             else:
                                 list_prob_cases.append(['Total', list_countries[i], 'All categories', str(num_app) + '%', str(num) + ' / ' + str(den)])
                 table_fin_res = pd.DataFrame(list_fin_res, index = [con_checks_feature + ' (' + str(cat) + ')' for cat in list_un_cat] + ['Total'], columns = list_countries + ['Total'])
+
+            table['Prob inst ' + con_checks_feature] = 0
+            table.loc[table[table[con_checks_id_col].isin(df_fin.index)].index, 'Prob inst ' + con_checks_feature] = 1
 
             flag_notes_on = False
             if flag_radio == 'Yes':
