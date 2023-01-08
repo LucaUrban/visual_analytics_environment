@@ -884,7 +884,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             # computation of the geometric mean
             df_gm['Occ'] = df_gm.groupby(con_checks_id_col)[con_checks_id_col].transform('count')
             df_gm['Geo Mean'] = df_gm[con_checks_feature] ** (1 / df_gm['Occ'])
-            df_gm = df_gm.groupby(by = 'ETER ID').prod()['Geo Mean']
+            df_gm = df_gm.groupby(by = con_checks_id_col).prod()['Geo Mean']
             df_gm = df_gm[df_gm >= df_gm.quantile(retain_quantile/100)]
 
             # computation of DV and problematic institutions
@@ -899,31 +899,23 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             df_fin = df_fin[df_fin['DV'] > df_fin['DV'].quantile(flag_issue_quantile/100)]
             ck_flags = set(df_fin.index)
 
-            for el in table[country_sel_col].unique():
-                if len(el) > 2:
-                    table['New Country Code'] = table[country_sel_col].str[:2]
-                    country_sel_col = 'New Country Code'
-                    break
-            list_countries = list(table[country_sel_col].unique())
-             
+            # creation od the result tables
+            list_countries = list(table[table[con_checks_id_col].isin(ck_flags)][country_sel_col].unique())
             if cat_sel_col == '-':
                 DV_fin_res = np.zeros((1, len(list_countries)), dtype = int)
                 for flag in ck_flags:
-                    DV_fin_res[0, list_countries.index(flag[:2])] += 1
+                    DV_fin_res[0, list_countries.index(flag)] += 1
             else:
-                list_un_cat = list(table[cat_sel_col].unique())
+                list_un_cat = list(table[table[con_checks_id_col].isin(ck_flags)][cat_sel_col].unique())
                 DV_fin_res = np.zeros((len(list_un_cat), len(list_countries)), dtype = int)
                 for flag in ck_flags:
-                    DV_fin_res[list_un_cat.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0]), list_countries.index(flag[:2])] += 1
+                    DV_fin_res[list_un_cat.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0]), list_countries.index(flag)] += 1
 
             table['Prob inst ' + con_checks_feature] = 0; list_prob_cases = []
             table.loc[table[table[con_checks_id_col].isin(df_fin.index)].index, 'Prob inst ' + con_checks_feature] = 1
                         
             if cat_sel_col == '-':
                 DV_fin_res = np.append(DV_fin_res, np.array([np.sum(DV_fin_res, axis = 1)]), axis = 1)
-                cou_0_cases = np.where(DV_fin_res[0, :] == 0)
-                DV_fin_res = np.delete(DV_fin_res, cou_0_cases, 1)
-                list_countries = [i for j, i in enumerate(list_countries) if j not in cou_0_cases[0]]
                 DV_fin_res = np.append(DV_fin_res, DV_fin_res, axis = 0)
                 list_fin_res = DV_fin_res.tolist()
                 for row in range(len(list_fin_res)):
@@ -946,9 +938,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             else:
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
-                cou_0_cases = np.where(DV_fin_res[len(list_un_cat), :] == 0)
-                DV_fin_res = np.delete(DV_fin_res, cou_0_cases, 1)
-                list_countries = [i for j, i in enumerate(list_countries) if j not in cou_0_cases[0]]
                 list_fin_res = DV_fin_res.tolist()
                 for row in range(len(list_fin_res)):
                     for i in range(len(list_fin_res[row])):
