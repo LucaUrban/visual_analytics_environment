@@ -1020,8 +1020,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             
             st.table(trend_table)
             if flag_radio == 'Yes':
-                
-                st.table(summ_table)
+                st.table(cr_metrics_table(flag_notes_on, set_trend, ones, twos))
             
             trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
             trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
