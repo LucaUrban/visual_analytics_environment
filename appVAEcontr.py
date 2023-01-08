@@ -932,6 +932,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                         for country in list_countries] for cat in list_un_cat])
                 tab_abs = np.array([[len(set(table[(table[country_sel_col] == country) & (table[cat_sel_col] == cat)][con_checks_id_col])) 
                                         for country in list_countries] for cat in list_un_cat])
+                st.write(DV_fin_res); st.write(tab_abs)
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
                 tab_abs = np.append(tab_abs, np.sum(tab_per, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
