@@ -989,19 +989,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                         ones = ones - (ones & twos)
                 else:
                     ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
-                if flag_notes_on:
-                    summ_table = pd.DataFrame([[str(len(twos.intersection(ck_flags))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(ck_flags))) / len(twos), 2)) + '%'], 
-                                               [str(len(ck_flags)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(ck_flags) / len(ones.union(twos))), 2)) + '%'], 
-                                               [str(len(ck_flags.difference(ones.union(twos)))), str(round((100 * len(ck_flags.difference(ones.union(twos)))) / len(ck_flags), 2)) + '%']], 
-                                               columns = ['Absolute Values', 'In percentage'], 
-                                               index = ['Accuracy', 'new/prev cases', 'Extra cases'])
-                else:
-                    summ_table = pd.DataFrame([[str(len(ones.intersection(ck_flags))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(ck_flags))) / len(ones), 2)) + '%'], 
-                                               [str(len(ck_flags)) + ' / ' + str(len(ones)), str(round(100 * (len(ck_flags) / len(ones)), 2)) + '%'], 
-                                               [str(len(ck_flags.difference(ones))), str(round((100 * len(ck_flags.difference(ones))) / len(ck_flags), 2)) + '%']], 
-                                               columns = ['Absolute Values', 'In percentage'], 
-                                               index = ['Accuracy', 'new/prev cases', 'Extra cases'])
-                st.table(summ_table)
+                st.table(cr_metrics_table(flag_notes_on, ck_flags, ones, twos))
 
             st.table(table_fin_res)
             if cat_sel_col == '-':
