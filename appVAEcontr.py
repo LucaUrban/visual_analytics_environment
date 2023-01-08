@@ -63,6 +63,21 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
     lis_id_eu_nut3 = [el['properties']['id'] for el in eu_nut3['features']]
 
     # functions
+    def cr_metrics_table(flag_notes, set_entity, ones, twos = set()):
+        if flag_notes_on:
+            summ_table = pd.DataFrame([[str(len(twos.intersection(set_entity))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(set_entity))) / len(twos), 2)) + '%'], 
+                                       [str(len(set_entity)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(set_entity) / len(ones.union(twos))), 2)) + '%'], 
+                                       [str(len(set_entity.difference(ones.union(twos)))), str(round((100 * len(set_entity.difference(ones.union(twos)))) / len(set_entity), 2)) + '%']], 
+                                       columns = ['Absolute Values', 'In percentage'], 
+                                       index = ['Accuracy', 'new/prev cases', 'Extra cases'])
+        else:
+            summ_table = pd.DataFrame([[str(len(ones.intersection(set_entity))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(set_entity))) / len(ones), 2)) + '%'], 
+                                       [str(len(set_entity)) + ' / ' + str(len(ones)), str(round(100 * (len(set_entity) / len(ones)), 2)) + '%'], 
+                                       [str(len(set_entity.difference(ones))), str(round((100 * len(set_entity.difference(ones))) / len(set_entity), 2)) + '%']], 
+                                       columns = ['Absolute Values', 'In percentage'], 
+                                       index = ['Accuracy', 'new/prev cases', 'Extra cases'])
+        return summ_table
+    
     def map_creation(res, nut_col, map_feature, color):
         if color == 'Portland': m_color = px.colors.diverging.Portland
         if color == 'Picnic': m_color = px.colors.diverging.Picnic
@@ -1005,18 +1020,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             
             st.table(trend_table)
             if flag_radio == 'Yes':
-                if flag_notes_on:
-                    summ_table = pd.DataFrame([[str(len(twos.intersection(set_trend))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(set_trend))) / len(twos), 2)) + '%'], 
-                                               [str(len(set_trend)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(set_trend) / len(ones.union(twos))), 2)) + '%'], 
-                                               [str(len(set_trend.difference(ones.union(twos)))), str(round((100 * len(set_trend.difference(ones.union(twos)))) / len(set_trend), 2)) + '%']], 
-                                               columns = ['Absolute Values', 'In percentage'], 
-                                               index = ['Accuracy', 'new/prev cases', 'Extra cases'])
-                else:
-                    summ_table = pd.DataFrame([[str(len(ones.intersection(set_trend))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(set_trend))) / len(ones), 2)) + '%'], 
-                                               [str(len(set_trend)) + ' / ' + str(len(ones)), str(round(100 * (len(set_trend) / len(ones)), 2)) + '%'], 
-                                               [str(len(set_trend.difference(ones))), str(round((100 * len(set_trend.difference(ones))) / len(set_trend), 2)) + '%']], 
-                                               columns = ['Absolute Values', 'In percentage'], 
-                                               index = ['Accuracy', 'new/prev cases', 'Extra cases'])
+                
                 st.table(summ_table)
             
             trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
