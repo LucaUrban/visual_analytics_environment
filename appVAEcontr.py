@@ -905,7 +905,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             # creation od the result tables
             list_countries = list(table[table[con_checks_id_col].isin(ck_flags)][country_sel_col].unique())
             if cat_sel_col == '-':
-                DV_fin_res = np.array([len(set(table[table[country_sel_col] == country][con_checks_id_col]).intersection(ck_flags)) for country in list_countries]) 
+                DV_fin_res = np.array([len(set(table[table[country_sel_col] == country][con_checks_id_col]).intersection(ck_flags)) for country in list_countries]).reshape((1, len(list_counties)))
                 DV_fin_res = np.append(DV_fin_res, np.array([np.sum(DV_fin_res, axis = 1)]), axis = 1)
                 DV_fin_res = np.append(DV_fin_res, DV_fin_res, axis = 0)
                 list_fin_res = DV_fin_res.tolist()
