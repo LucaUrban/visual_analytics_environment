@@ -904,7 +904,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             if cat_sel_col == '-':
                 DV_fin_res = np.zeros((1, len(list_countries)), dtype = int)
                 for flag in ck_flags:
-                    st.write(list_countries.index(flag))
+                    st.write(flag)
                     DV_fin_res[0, list_countries.index(flag)] += 1
             else:
                 list_un_cat = list(table[table[con_checks_id_col].isin(ck_flags)][cat_sel_col].unique())
