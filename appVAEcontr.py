@@ -819,22 +819,10 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                             dict_trend[list(dict_trend.keys())[class_tr-1]].append(inst)
                             if class_tr == 1 or class_tr == 3 or class_tr == 5:
                                 set_trend.add(inst)
-                    trend_table = pd.DataFrame([len(v) for v in dict_trend.values()], index = dict_trend.keys(), columns = ['Number of institutions'])
-
-                    st.table(trend_table)
+                    st.table(pd.DataFrame([len(v) for v in dict_trend.values()], index = dict_trend.keys(), columns = ['Number of institutions']))
+                  
                     if flag_radio == 'Yes':
-                        if flag_notes_on:
-                            st.table(pd.DataFrame([[str(len(twos.intersection(set_trend))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(set_trend))) / len(twos), 2)) + '%'], 
-                                                   [str(len(set_trend)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(set_trend) / len(ones.union(twos))), 2)) + '%'], 
-                                                   [str(len(set_trend.difference(ones.union(twos)))), str(100 * len(set_trend.difference(ones.union(twos))) / len(dict_check_flags[con_checks_feature])) + '%']], 
-                                                   columns = ['Absolute Values', 'In percentage'], 
-                                                   index = ['Accuracy', 'new/prev cases', 'Extra cases']))
-                        else:
-                            st.table(pd.DataFrame([[str(len(ones.intersection(set_trend))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(set_trend))) / len(ones), 2)) + '%'], 
-                                                   [str(len(set_trend)) + ' / ' + str(len(ones)), str(round(100 * (len(set_trend) / len(ones)), 2)) + '%'], 
-                                                   [str(len(set_trend.difference(ones))), str(100 * len(set_trend.difference(ones)) / len(dict_check_flags[con_checks_feature])) + '%']], 
-                                                   columns = ['Absolute Values', 'In percentage'], 
-                                                   index = ['Accuracy', 'new/prev cases', 'Extra cases']))
+                        st.table(cr_metrics_table(flag_notes_on, set_trend, ones, twos))
 
                     trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
                     trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
@@ -1004,9 +992,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     dict_trend[list(dict_trend.keys())[class_tr-1]].append(inst)
                     if class_tr == 1 or class_tr == 3 or class_tr == 5:
                         set_trend.add(inst)
-            trend_table = pd.DataFrame([len(v) for v in dict_trend.values()], index = dict_trend.keys(), columns = ['Number of institutions'])
-            
-            st.table(trend_table)
+            st.table(pd.DataFrame([len(v) for v in dict_trend.values()], index = dict_trend.keys(), columns = ['Number of institutions']))
+         
             if flag_radio == 'Yes':
                 st.table(cr_metrics_table(flag_notes_on, set_trend, ones, twos))
             
