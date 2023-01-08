@@ -906,8 +906,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             list_countries = list(table[table[con_checks_id_col].isin(ck_flags)][country_sel_col].unique())
             if cat_sel_col == '-':
                 DV_fin_res = np.zeros((1, len(list_countries)), dtype = int)
-                for flag in ck_flags:
-                    DV_fin_res[0, list_countries.index(table[table[con_checks_id_col] == flag][country_sel_col].unique()[0])] += 1
+                for i in range(len(list_countries)):
+                    DV_fin_res[0, i] = len(set(table[table[country_sel_col] == list_countries[i]][con_checks_id_col]).intersection(ck_flags))
             else:
                 list_un_cat = list(table[table[con_checks_id_col].isin(ck_flags)][cat_sel_col].unique())
                 DV_fin_res = np.zeros((len(list_un_cat), len(list_countries)), dtype = int)
