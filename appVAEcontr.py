@@ -928,11 +928,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 table_fin_res = pd.DataFrame(list_fin_res, index = [con_checks_feature, 'Total'], columns = list_countries + ['Total'])
             else:
                 list_un_cat = list(table[table[con_checks_id_col].isin(ck_flags)][cat_sel_col].unique())
-                DV_fin_res = np.zeros((len(list_un_cat), len(list_countries)), dtype = int)
-                for flag in ck_flags:
-                    DV_fin_res[list_un_cat.index(table[table[con_checks_id_col] == flag][cat_sel_col].unique()[0]), 
-                               list_countries.index(table[table[con_checks_id_col] == flag][country_sel_col].unique()[0])] += 1
-                           
+                DV_fin_res = np.array([[len(set(table[(table[country_sel_col] == country) & (table[cat_sel_col] == cat)][con_checks_id_col]).intersection(ck_flags)) 
+                                        for cat in list_un_cat] for country in list_countries])           
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
                 DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
                 list_fin_res = DV_fin_res.tolist()
