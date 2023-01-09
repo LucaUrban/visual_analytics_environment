@@ -911,7 +911,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                        for country in list_countries]).reshape((1, len(list_countries)))
                 DV_fin_res = np.append(DV_fin_res, np.array([np.sum(DV_fin_res, axis = 1)]), axis = 1)
                 DV_fin_res = np.append(DV_fin_res, DV_fin_res, axis = 0)
-                tab_abs = np.append(tab_abs, np.sum(tab_abs, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
+                tab_abs = np.append(tab_abs, np.array([np.sum(tab_abs, axis = 1)]), axis = 1)
                 tab_abs = np.append(tab_abs, tab_abs, axis = 0)
                 tab_per = 100 * np.true_divide(DV_fin_res, tab_abs, out = np.zeros(DV_fin_res.shape, dtype=float), where = tab_abs!=0)
                 list_fin_res = [[f'{DV_fin_res[i, j]}\n({round(tab_per[i, j], 2)}%)' for j in range(DV_fin_res.shape[1])] for i in range(DV_fin_res.shape[0])]
