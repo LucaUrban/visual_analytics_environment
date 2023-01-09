@@ -938,7 +938,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 tab_abs = np.append(tab_abs, np.sum(tab_abs, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
                 tab_per = 100*np.true_divide(DV_fin_res, tab_abs, out = np.zeros(DV_fin_res.shape, dtype=float), where = tab_abs!=0)
                 list_fin_res = [[f'{DV_fin_res[i, j]}\n({round(tab_per[i, j], 2)}%)' for j in range(DV_fin_res.shape[1])] for i in range(DV_fin_res.shape[0])]
-                st.write(list_countries[0])
+                for i, j in np.argwhere(tab_per >= prob_cases_per): st.write(list_countries[j], tab_per[i, j], DV_fin_res[i, j], tab_abs[i, j])
                 list_prob_cases = [[con_checks_feature, list_countries[j], list_un_cat[i], f'{round(tab_per[i, j], 2)}%', f'{DV_fin_res[i, j]}/{tab_abs[i, j]}'] if i >= len(list_un_cat)-30 or j > len(list_countries)-30
                                     else ['Total', list_countries[j], 'All categories', f'{round(tab_per[i, j], 2)}%', f'{DV_fin_res[i, j]}/{tab_abs[i, j]}']
                                     for i, j in np.argwhere(tab_per >= prob_cases_per)]
