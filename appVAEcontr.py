@@ -937,7 +937,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 tab_abs = np.append(tab_abs, np.sum(tab_abs, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
                 tab_abs = np.append(tab_abs, np.sum(tab_abs, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
                 tab_per = 100*np.true_divide(DV_fin_res, tab_abs, out = np.zeros(DV_fin_res.shape, dtype=float), where = tab_abs!=0)
-                st.write(DV_fin_res); st.write(tab_abs); st.write(tab_per)
+                st.write(list_countries); st.write(list_un_cat)
+                st.write(DV_fin_res); st.write(tab_abs); st.write(tab_per); st.write(list_fin_res)
                 list_fin_res = [[f'{DV_fin_res[i, j]}\n({tab_per[i, j]})' for i in range(DV_fin_res.shape[0])] for j in range(DV_fin_res.shape[1])]
                 list_prob_cases = [[con_checks_feature, f'list_countries[{j}]', f'list_countries[{i}]', f'{round(tab_per[i, j], 2)}%', f'{DV_fin_res[i, j]}/{tab_abs[i, j]}'] if i < tab_per.shape[0]-2 or j < tab_per.shape[1]-2
                                     else ['Total', f'list_countries[{j}]', 'All categories', f'{round(tab_per[i, j], 2)}%', f'{DV_fin_res[i, j]}/{tab_abs[i, j]}']
@@ -960,7 +961,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
                 st.table(cr_metrics_table(flag_notes_on, ck_flags, ones, twos))
 
-            st.table(pd.DataFrame(list_fin_res, index = [con_checks_feature + ' (' + str(cat) + ')' for cat in list_un_cat] + ['Total'], columns = list_countries + ['Total']))
+            st.table(pd.DataFrame(list_fin_res, index = [f'{con_checks_feature} ({cat})' for cat in list_un_cat] + ['Total'], columns = list_countries + ['Total']))
             if cat_sel_col == '-':
                 st.table(pd.DataFrame(list_prob_cases, columns = ['Variable', 'Country', '% Value', 'Absolute values']))
             else:
