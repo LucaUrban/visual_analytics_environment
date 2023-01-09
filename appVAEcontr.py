@@ -939,8 +939,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 tab_per = 100*np.true_divide(DV_fin_res, tab_abs, out = np.zeros(DV_fin_res.shape, dtype=float), where = tab_abs!=0)
                 list_fin_res = [[f'{DV_fin_res[i, j]}\n({round(tab_per[i, j], 2)}%)' for j in range(DV_fin_res.shape[1])] for i in range(DV_fin_res.shape[0])]
                 for i, j in np.argwhere(tab_per >= prob_cases_per): st.write(list_countries[j], tab_per[i, j], DV_fin_res[i, j], tab_abs[i, j])
-                list_prob_cases = [[con_checks_feature, list_countries[j], list_un_cat[i], f'{round(tab_per[i, j], 2)}%', f'{DV_fin_res[i, j]}/{tab_abs[i, j]}'] if i == len(list_un_cat) or j != len(list_countries)
-                                    else ['Total', list_countries[j], 'All categories', f'{round(tab_per[i, j], 2)}%', f'{DV_fin_res[i, j]}/{tab_abs[i, j]}']
+                list_un_cat += ['Total']
+                list_prob_cases = [[con_checks_feature, list_countries[j], list_un_cat[i], f'{round(tab_per[i, j], 2)}%', f'{DV_fin_res[i, j]}/{tab_abs[i, j]}']
                                     for i, j in np.argwhere(tab_per >= prob_cases_per)]
 
             table['Prob inst ' + con_checks_feature] = 0
@@ -960,7 +960,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
                 st.table(cr_metrics_table(flag_notes_on, ck_flags, ones, twos))
 
-            st.table(pd.DataFrame(list_fin_res, index = [f'{con_checks_feature} ({cat})' for cat in list_un_cat] + ['Total'], columns = list_countries + ['Total']))
+            st.table(pd.DataFrame(list_fin_res, index = [f'{con_checks_feature} ({cat})' for cat in list_un_cat], columns = list_countries + ['Total']))
             if cat_sel_col == '-':
                 st.table(pd.DataFrame(list_prob_cases, columns = ['Variable', 'Country', '% Value', 'Absolute values']))
             else:
