@@ -744,7 +744,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 for cat in list_un_cat:
                     set_app = set_app.union(dict_flags[con_checks_feature][cat])
                 dict_check_flags[con_checks_feature] = set_app
-                
+                st.write(dict_check_flags)
                 table['Prob inst ' + con_checks_feature] = 0
                 table.loc[table[table[con_checks_id_col].isin(dict_check_flags[con_checks_feature])].index, 'Prob inst ' + con_checks_feature] = 1
 
