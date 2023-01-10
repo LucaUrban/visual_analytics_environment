@@ -739,7 +739,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 
                 for key in dict_flags.keys():
                     ck_flags = ck_flags.union(dict_flags[key])
-                st.write(ck_flags)
+                
                 table['Prob inst ' + con_checks_feature] = 0
                 table.loc[table[table[con_checks_id_col].isin(ck_flags)].index, 'Prob inst ' + con_checks_feature] = 1
 
@@ -772,15 +772,15 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     else:
                         ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
                     if flag_notes_on:
-                        summ_table = pd.DataFrame([[str(len(twos.intersection(dict_check_flags[con_checks_feature]))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(dict_check_flags[con_checks_feature]))) / len(twos), 2)) + '%'], 
-                                                   [str(len(dict_check_flags[con_checks_feature])) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(dict_check_flags[con_checks_feature]) / len(ones.union(twos))), 2)) + '%'], 
-                                                   [str(len(dict_check_flags[con_checks_feature].difference(ones.union(twos)))), str(round((100 * len(dict_check_flags[con_checks_feature].difference(ones.union(twos)))) / len(dict_check_flags[con_checks_feature]), 2)) + '%']], 
+                        summ_table = pd.DataFrame([[str(len(twos.intersection(ck_flags))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(ck_flags))) / len(twos), 2)) + '%'], 
+                                                   [str(len(ck_flags)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(ck_flags) / len(ones.union(twos))), 2)) + '%'], 
+                                                   [str(len(ck_flags.difference(ones.union(twos)))), str(round((100 * len(ck_flags.difference(ones.union(twos)))) / len(ck_flags), 2)) + '%']], 
                                                    columns = ['Absolute Values', 'In percentage'], 
                                                    index = ['Accuracy', 'new/prev cases', 'Extra cases'])
                     else:
-                        summ_table = pd.DataFrame([[str(len(ones.intersection(dict_check_flags[con_checks_feature]))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(dict_check_flags[con_checks_feature]))) / len(ones), 2)) + '%'], 
-                                                   [str(len(dict_check_flags[con_checks_feature])) + ' / ' + str(len(ones)), str(round(100 * (len(dict_check_flags[con_checks_feature]) / len(ones)), 2)) + '%'], 
-                                                   [str(len(dict_check_flags[con_checks_feature].difference(ones))), str(round((100 * len(dict_check_flags[con_checks_feature].difference(ones))) / len(dict_check_flags[con_checks_feature]), 2)) + '%']], 
+                        summ_table = pd.DataFrame([[str(len(ones.intersection(ck_flags))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(ck_flags))) / len(ones), 2)) + '%'], 
+                                                   [str(len(ck_flags)) + ' / ' + str(len(ones)), str(round(100 * (len(ck_flags) / len(ones)), 2)) + '%'], 
+                                                   [str(len(ck_flags.difference(ones))), str(round((100 * len(ck_flags.difference(ones))) / len(ck_flags), 2)) + '%']], 
                                                    columns = ['Absolute Values', 'In percentage'], 
                                                    index = ['Accuracy', 'new/prev cases', 'Extra cases'])
                     st.table(summ_table)
@@ -790,7 +790,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
                 if len(list(table['Class trend'].unique())) > 1:
                     dict_trend = {'Strong decrease': [], 'Weak decrease': [], 'Undetermined trend': [], 'Weak increase': [], 'Strong increase': []}; set_trend = set()
-                    for inst in dict_check_flags[con_checks_feature]:
+                    for inst in ck_flags:
                         class_tr = int(table[table[con_checks_id_col] == inst]['Class trend'].unique()[0])
                         if class_tr != 0:
                             dict_trend[list(dict_trend.keys())[class_tr-1]].append(inst)
