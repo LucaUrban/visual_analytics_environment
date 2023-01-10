@@ -723,25 +723,25 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                         if p > p_value_trend_per/100:
                             table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
 
-            dict_flags = dict(); countries = list(table[country_sel_col].unique())
+            dict_flags = dict(); list_countries = list(table[country_sel_col].unique())
             if cat_sel_col != '-':
-                categories = list(table[cat_sel_col].unique())
+                list_un_cat = list(table[cat_sel_col].unique())
                 dict_flags[con_checks_feature] = dict()
-                for cc in countries:
+                for cc in list_countries:
                     country_table = table[table[country_sel_col] == cc][[con_checks_id_col, con_checks_feature]]
                     inst_lower = set(country_table[country_table[con_checks_feature] <= country_table[con_checks_feature].quantile(flag_issue_quantile/100)][con_checks_id_col].values)
                     inst_upper = set(country_table[country_table[con_checks_feature] >= country_table[con_checks_feature].quantile(1 - (flag_issue_quantile/100))][con_checks_id_col].values)
                     dict_flags[con_checks_feature][cc] = inst_lower.union(inst_upper)
-                for cat in categories:
+                for cat in list_un_cat:
                     cat_table = table[table[cat_sel_col] == cat][[con_checks_id_col, con_checks_feature]]
                     inst_lower = set(cat_table[cat_table[con_checks_feature] <= cat_table[con_checks_feature].quantile(flag_issue_quantile/100)][con_checks_id_col].values)
                     inst_upper = set(cat_table[cat_table[con_checks_feature] >= cat_table[con_checks_feature].quantile(1 - (flag_issue_quantile/100))][con_checks_id_col].values)
                     dict_flags[con_checks_feature][cat] = inst_lower.union(inst_upper)
 
                 dict_check_flags = {}; set_app = set()
-                for cc in countries:
+                for cc in list_countries:
                     set_app = set_app.union(dict_flags[con_checks_feature][cc])
-                for cat in categories:
+                for cat in list_un_cat:
                     set_app = set_app.union(dict_flags[con_checks_feature][cat])
                 dict_check_flags[con_checks_feature] = set_app
                 
