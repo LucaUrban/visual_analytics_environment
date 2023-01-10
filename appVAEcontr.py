@@ -814,7 +814,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
 
                 st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
-                               data = cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_features, descr_col, flags_col))
+                               data = cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_feature, descr_col, flags_col))
             else:
                 st.warning('you have to choose a value for the field "Category selection column".')
         else:
