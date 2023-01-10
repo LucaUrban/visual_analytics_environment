@@ -754,10 +754,10 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 tab_abs = np.append(tab_abs, np.sum(tab_abs, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
                 tab_per = 100 * np.true_divide(DV_fin_res, tab_abs, out = np.zeros(DV_fin_res.shape, dtype=float), where = tab_abs!=0)
                 list_fin_res = [[f'{DV_fin_res[i, j]}\n({round(tab_per[i, j], 2)}%)' for j in range(DV_fin_res.shape[1])] for i in range(DV_fin_res.shape[0])]
-                list_un_cat += ['Total']
+                list_un_cat += ['Total']; list_countries += ['Total']
                 list_prob_cases = [[con_checks_feature, list_countries[j], list_un_cat[i], f'{round(tab_per[i, j], 2)}%', f'{DV_fin_res[i, j]}/{tab_abs[i, j]}']
                                     for i, j in np.argwhere(tab_per >= prob_cases_per)]
-                table_fin_res = pd.DataFrame(list_fin_res, index = [f'{con_checks_feature} ({cat})' for cat in list_un_cat], columns = list_countries + ['Total'])
+                table_fin_res = pd.DataFrame(list_fin_res, index = [f'{con_checks_feature} ({cat})' for cat in list_un_cat], columns = list_countries)
 
                 flag_notes_on = False
                 if flag_radio == 'Yes':
@@ -907,10 +907,10 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 tab_abs = np.append(tab_abs, np.sum(tab_abs, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
                 tab_per = 100 * np.true_divide(DV_fin_res, tab_abs, out = np.zeros(DV_fin_res.shape, dtype=float), where = tab_abs!=0)
                 list_fin_res = [[f'{DV_fin_res[i, j]}\n({round(tab_per[i, j], 2)}%)' for j in range(DV_fin_res.shape[1])] for i in range(DV_fin_res.shape[0])]
-                list_un_cat += ['Total']
+                list_un_cat += ['Total']; list_countries += ['Total']
                 list_prob_cases = [[con_checks_feature, list_countries[j], list_un_cat[i], f'{round(tab_per[i, j], 2)}%', f'{DV_fin_res[i, j]}/{tab_abs[i, j]}']
                                     for i, j in np.argwhere(tab_per >= prob_cases_per)]
-                table_fin_res = pd.DataFrame(list_fin_res, index = [f'{con_checks_feature} ({cat})' for cat in list_un_cat], columns = list_countries + ['Total'])
+                table_fin_res = pd.DataFrame(list_fin_res, index = [f'{con_checks_feature} ({cat})' for cat in list_un_cat], columns = list_countries)
 
             table['Prob inst ' + con_checks_feature] = 0
             table.loc[table[table[con_checks_id_col].isin(df_fin.index)].index, 'Prob inst ' + con_checks_feature] = 1
