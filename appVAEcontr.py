@@ -725,7 +725,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             if cat_sel_col != '-':
                 list_countries = list(table[country_sel_col].unique()); list_un_cat = list(table[cat_sel_col].unique())
-                dict_flags = dict()
+                dict_flags = dict(); ck_flags = set()
                 for cc in list_countries:
                     country_table = table[table[country_sel_col] == cc][[con_checks_id_col, con_checks_feature]]
                     inst_lower = set(country_table[country_table[con_checks_feature] <= country_table[con_checks_feature].quantile(flag_issue_quantile/100)][con_checks_id_col].values)
