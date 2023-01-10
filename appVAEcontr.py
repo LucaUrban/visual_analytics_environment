@@ -749,37 +749,20 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 table.loc[table[table[con_checks_id_col].isin(dict_check_flags[con_checks_feature])].index, 'Prob inst ' + con_checks_feature] = 1
 
                 # table reporting the cases by countries
-                DV_fin_res = np.zeros((len(categories), len(countries)), dtype = int)
-                for el in set_app:
-                    DV_fin_res[categories.index(table[table[con_checks_id_col] == el][cat_sel_col].unique()[0]), 
-                               countries.index(table[table[con_checks_id_col] == el][country_sel_col].unique()[0])] += 1
-                    
-                DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 1).reshape((len(categories), 1)), axis = 1)
-                DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 0).reshape(1, len(countries) + 1), axis = 0)
-                cou_0_cases = np.where(DV_fin_res[len(categories), :] == 0)
-                DV_fin_res = np.delete(DV_fin_res, cou_0_cases, 1)
-                countries = [i for j, i in enumerate(countries) if j not in cou_0_cases[0]]
-                list_fin_res = DV_fin_res.tolist(); list_prob_cases = []
-                for row in range(len(list_fin_res)):
-                    for i in range(len(list_fin_res[row])):
-                        if row != len(list_fin_res)-1 and i != len(list_fin_res[row])-1:
-                            den = len(table[(table[country_sel_col] == countries[i]) & (table[cat_sel_col] == categories[row])][con_checks_id_col].unique())
-                        if row == len(list_fin_res)-1 and i != len(list_fin_res[row])-1:
-                            den = len(table[table[country_sel_col] == countries[i]][con_checks_id_col].unique())
-                        if row != len(list_fin_res)-1 and i == len(list_fin_res[row])-1:
-                            den = len(table[table[cat_sel_col] == categories[row]][con_checks_id_col].unique())
-                        if row == len(list_fin_res)-1 and i == len(list_fin_res[row])-1:
-                            den = len(table[con_checks_id_col].unique())
-                        num = list_fin_res[row][i]
-                        if den != 0:
-                            num_app = round(100 * num/den, 2); list_fin_res[row][i] = str(list_fin_res[row][i]) + '\n(' + str(num_app) + '%)'
-                        else:
-                            num_app = 0; list_fin_res[row][i] = '0\n(0%)'
-                        if i != len(list_fin_res[row])-1 and num_app >= prob_cases_per:
-                            if row != len(list_fin_res)-1:
-                                list_prob_cases.append([con_checks_feature, countries[i], categories[int(row % len(categories))], str(num_app) + '%', str(num) + ' / ' + str(den)])
-                            else:
-                                list_prob_cases.append(['Total', countries[i], 'All categories', str(num_app) + '%', str(num) + ' / ' + str(den)])
+                DV_fin_res = np.array([[len(set(table[(table[country_sel_col] == country) & (table[cat_sel_col] == cat)][con_checks_id_col]).intersection(ck_flags)) 
+                                        for country in list_countries] for cat in list_un_cat])
+                tab_abs = np.array([[len(set(table[(table[country_sel_col] == country) & (table[cat_sel_col] == cat)][con_checks_id_col])) 
+                                        for country in list_countries] for cat in list_un_cat])
+                DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
+                DV_fin_res = np.append(DV_fin_res, np.sum(DV_fin_res, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
+                tab_abs = np.append(tab_abs, np.sum(tab_abs, axis = 1).reshape((len(list_un_cat), 1)), axis = 1)
+                tab_abs = np.append(tab_abs, np.sum(tab_abs, axis = 0).reshape(1, len(list_countries)+1), axis = 0)
+                tab_per = 100 * np.true_divide(DV_fin_res, tab_abs, out = np.zeros(DV_fin_res.shape, dtype=float), where = tab_abs!=0)
+                list_fin_res = [[f'{DV_fin_res[i, j]}\n({round(tab_per[i, j], 2)}%)' for j in range(DV_fin_res.shape[1])] for i in range(DV_fin_res.shape[0])]
+                list_un_cat += ['Total']
+                list_prob_cases = [[con_checks_feature, list_countries[j], list_un_cat[i], f'{round(tab_per[i, j], 2)}%', f'{DV_fin_res[i, j]}/{tab_abs[i, j]}']
+                                    for i, j in np.argwhere(tab_per >= prob_cases_per)]
+                table_fin_res = pd.DataFrame(list_fin_res, index = [f'{con_checks_feature} ({cat})' for cat in list_un_cat], columns = list_countries + ['Total'])
 
                 flag_notes_on = False
                 if flag_radio == 'Yes':
@@ -806,8 +789,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                                    columns = ['Absolute Values', 'In percentage'], 
                                                    index = ['Accuracy', 'new/prev cases', 'Extra cases'])
                     st.table(summ_table)
-
-                table_fin_res = pd.DataFrame(list_fin_res, index = [con_checks_feature + ' (' + str(cat) + ')' for cat in categories] + ['Total'], columns = countries + ['Total'])
+                           
                 st.table(table_fin_res)
                 st.table(pd.DataFrame(list_prob_cases, columns = ['Variable', 'Country', 'Category', '% Value', 'Absolute values']))
 
