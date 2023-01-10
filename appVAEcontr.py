@@ -736,7 +736,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     inst_lower = set(cat_table[cat_table[con_checks_feature] <= cat_table[con_checks_feature].quantile(flag_issue_quantile/100)][con_checks_id_col].values)
                     inst_upper = set(cat_table[cat_table[con_checks_feature] >= cat_table[con_checks_feature].quantile(1 - (flag_issue_quantile/100))][con_checks_id_col].values)
                     dict_flags[cat] = inst_lower.union(inst_upper)
-                ck_flags = set(s[key] for key in dict_flags.keys())
+                ck_flags = set(dict_flags[key] for key in dict_flags.keys())
                 st.write(ck_flags)
                 table['Prob inst ' + con_checks_feature] = 0
                 table.loc[table[table[con_checks_id_col].isin(ck_flags)].index, 'Prob inst ' + con_checks_feature] = 1
