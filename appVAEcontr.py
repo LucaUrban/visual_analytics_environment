@@ -773,11 +773,11 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 dict_flags = dict(); ck_flags = set(); table['Rupt. years'] = ''
                 for cc in list_countries:
                     country_table = table[table[country_sel_col] == cc][[con_checks_id_col, con_checks_feature]]
-                    dict_flags[cc] = set(country_table[(country_table[con_checks_feature] <= country_table[con_checks_feature].quantile(flag_issue_quantile/100)) &
+                    dict_flags[cc] = set(country_table[(country_table[con_checks_feature] <= country_table[con_checks_feature].quantile(flag_issue_quantile/100)) |
                                                        (country_table[con_checks_feature] >= country_table[con_checks_feature].quantile(1-(flag_issue_quantile/100)))][con_checks_id_col].values)
                 for cat in list_un_cat:
                     cat_table = table[table[cat_sel_col] == cat][[con_checks_id_col, con_checks_feature]]
-                    dict_flags[cat] = set(cat_table[(cat_table[con_checks_feature] <= cat_table[con_checks_feature].quantile(flag_issue_quantile/100)) & 
+                    dict_flags[cat] = set(cat_table[(cat_table[con_checks_feature] <= cat_table[con_checks_feature].quantile(flag_issue_quantile/100)) | 
                                                     (cat_table[con_checks_feature] >= cat_table[con_checks_feature].quantile(1-(flag_issue_quantile/100)))][con_checks_id_col].values)
                 
                 for key in dict_flags.keys():
