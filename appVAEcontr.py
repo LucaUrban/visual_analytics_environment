@@ -783,6 +783,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 for key in dict_flags.keys():
                     ck_flags = ck_flags.union(dict_flags[key])
                 
+                st.write(ck_flags)
                 table['Prob inst ' + con_checks_feature] = 0
                 table.loc[table[table[con_checks_id_col].isin(ck_flags)].index, 'Prob inst ' + con_checks_feature] = 1
 
