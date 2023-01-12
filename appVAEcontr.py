@@ -878,7 +878,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 for i in np.argwhere(diff_per > rupt_y_per):
                     rupt_y += f'{not_na_years[i]}'
                     
-                if rupt_y != ''
+                if rupt_y != '':
                     table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt. Years'] = rupt_y[:-1]
             
             # computation of the geometric mean
