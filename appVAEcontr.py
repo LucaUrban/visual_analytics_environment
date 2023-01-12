@@ -120,7 +120,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                 for i, j in np.argwhere(tab_per >= prob_cases_per)]
             return pd.DataFrame(list_fin_res, index = [f'{con_checks_feature} ({cat})' for cat in list_un_cat], columns = list_countries), list_prob_cases
     
-    def cr_metrics_table(flag_notes, set_entity, ones, twos):
+    def cr_metrics_table(set_entity, ones, twos):
         if flag_notes_on:
             summ_table = pd.DataFrame([[str(len(twos.intersection(set_entity))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(set_entity))) / len(twos), 2)) + '%'], 
                                        [str(len(set_entity)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(set_entity) / len(ones.union(twos))), 2)) + '%'], 
@@ -781,19 +781,17 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 # table reporting the cases by countries
                 table_fin_res , list_prob_cases = cr_res_tables(table, ck_flags, con_checks_id_col, con_checks_feature, country_sel_col, list_countries, prob_cases_per, cat_sel_col)
 
-                flag_notes_on = False
                 if flag_radio == 'Yes':
                     if table[flags_col].dtypes == 'O':
                         if notes_col == '-':
                             ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p')][con_checks_id_col].values); twos = set()
                         else:
-                            flag_notes_on = True
                             ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (pd.isna(table[notes_col]))][con_checks_id_col].values).union(set(table[table[flags_col] == 'p'][con_checks_id_col].values))
                             twos = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (-pd.isna(table[notes_col]))][con_checks_id_col].values)
                             ones = ones - (ones & twos)
                     else:
                         ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
-                    st.table(cr_metrics_table(flag_notes_on, ck_flags, ones, twos))
+                    st.table(cr_metrics_table(ck_flags, ones, twos))
                            
                 st.table(table_fin_res)
                 st.table(pd.DataFrame(list_prob_cases, columns = ['Variable', 'Country', 'Category', '% Value', 'Absolute values']))
@@ -899,19 +897,17 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             table['Prob inst ' + con_checks_feature] = 0
             table.loc[table[table[con_checks_id_col].isin(ck_flags)].index, 'Prob inst ' + con_checks_feature] = 1
 
-            flag_notes_on = False
             if flag_radio == 'Yes':
                 if table[flags_col].dtypes == 'O':
                     if notes_col == '-':
                         ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p')][con_checks_id_col].values); twos = set()
                     else:
-                        flag_notes_on = True
                         ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (pd.isna(table[notes_col]))][con_checks_id_col].values).union(set(table[table[flags_col] == 'p'][con_checks_id_col].values))
                         twos = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (-pd.isna(table[notes_col]))][con_checks_id_col].values)
                         ones = ones - (ones & twos)
                 else:
                     ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
-                st.table(cr_metrics_table(flag_notes_on, ck_flags, ones, twos))
+                st.table(cr_metrics_table(ck_flags, ones, twos))
 
             st.table(table_fin_res)
             if cat_sel_col == '-':
