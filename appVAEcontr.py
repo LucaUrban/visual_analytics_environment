@@ -121,7 +121,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             return pd.DataFrame(list_fin_res, index = [f'{con_checks_feature} ({cat})' for cat in list_un_cat], columns = list_countries), list_prob_cases
     
     def cr_metrics_table(set_entity, ones, twos):
-        if flag_notes_on:
+        if len(twos) == 0:
             summ_table = pd.DataFrame([[str(len(twos.intersection(set_entity))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(set_entity))) / len(twos), 2)) + '%'], 
                                        [str(len(set_entity)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(set_entity) / len(ones.union(twos))), 2)) + '%'], 
                                        [str(len(set_entity.difference(ones.union(twos)))), str(round((100 * len(set_entity.difference(ones.union(twos)))) / len(set_entity), 2)) + '%']], 
