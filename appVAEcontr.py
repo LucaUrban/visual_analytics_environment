@@ -865,6 +865,21 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                             table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 2
                         if p > p_value_trend_per/100:
                             table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
+                                    
+                # issue flags about ruptures in the series
+                not_na_years = df_DV[df_DV[con_checks_id_col] == id_inst][time_col].values
+                not_na_val = df_DV[df_DV[con_checks_id_col] == id_inst][con_checks_feature].values
+                x = [[i, 0] for i in range(len(not_na_val))]; rupt_y = ''
+                reg = Ridge().fit(x, not_na_val); coeff = reg.coef_; intercept = reg.intercept_
+                pred = np.array([intercept + (i * coeff[0]) for i in range(len(not_na_val))])
+                diff = np.abs(not_na_val) - np.abs(pred)
+                diff_per = np.abs((100 * np.true_divide(diff, np.abs(not_na_val), out = np.zeros(diff.shape, dtype=float), where = np.abs(not_na_val)!=0)))
+                
+                for i in np.argwhere(diff_per > rupt_y_per):
+                    rupt_y += f'{not_na_years[i]}'
+                    
+                if rupt_y != ''
+                    table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt. Years'] = rupt_y[:-1]
             
             # computation of the geometric mean
             df_gm['Occ'] = df_gm.groupby(con_checks_id_col)[con_checks_id_col].transform('count')
