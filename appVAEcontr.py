@@ -135,6 +135,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                        index = ['Accuracy', 'new/prev cases', 'Extra cases'])
         return summ_table
     
+    def cr_set_flags():
+        pass
+    
     def cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_features, descr_col, flags_col):
         table_download = table.pivot(index = [con_checks_id_col], columns = [time_col], values = [con_checks_features])
         table_download.columns = table_download.columns.droplevel()
@@ -894,7 +897,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 table_fin_res , list_prob_cases = cr_res_tables(table, ck_flags, con_checks_id_col, con_checks_feature, country_sel_col, list_countries, prob_cases_per)
             
             table['Prob inst ' + con_checks_feature] = 0
-            table.loc[table[table[con_checks_id_col].isin(df_fin.index)].index, 'Prob inst ' + con_checks_feature] = 1
+            table.loc[table[table[con_checks_id_col].isin(ck_flags)].index, 'Prob inst ' + con_checks_feature] = 1
 
             flag_notes_on = False
             if flag_radio == 'Yes':
