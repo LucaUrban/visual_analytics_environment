@@ -135,8 +135,18 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                        index = ['Accuracy', 'new/prev cases', 'Extra cases'])
         return summ_table
     
-    def cr_set_flags():
-        pass
+    def cr_set_flags(table, ck_flags, flag_radio, flags_col, notes_col, con_checks_id_col):
+        if table[flags_col].dtypes == 'O':
+            if notes_col == '-':
+                ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p')][con_checks_id_col].values); twos = set()
+            else:
+                ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (pd.isna(table[notes_col]))][con_checks_id_col].values).union(set(table[table[flags_col] == 'p'][con_checks_id_col].values))
+                twos = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (-pd.isna(table[notes_col]))][con_checks_id_col].values)
+                ones = ones - (ones & twos)
+        else:
+            ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
+        st.table(cr_metrics_table(ck_flags, ones, twos))
+        return ones, twos
     
     def cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_features, descr_col, flags_col):
         table_download = table.pivot(index = [con_checks_id_col], columns = [time_col], values = [con_checks_features])
@@ -781,17 +791,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 # table reporting the cases by countries
                 table_fin_res , list_prob_cases = cr_res_tables(table, ck_flags, con_checks_id_col, con_checks_feature, country_sel_col, list_countries, prob_cases_per, cat_sel_col)
 
-                if flag_radio == 'Yes':
-                    if table[flags_col].dtypes == 'O':
-                        if notes_col == '-':
-                            ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p')][con_checks_id_col].values); twos = set()
-                        else:
-                            ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (pd.isna(table[notes_col]))][con_checks_id_col].values).union(set(table[table[flags_col] == 'p'][con_checks_id_col].values))
-                            twos = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (-pd.isna(table[notes_col]))][con_checks_id_col].values)
-                            ones = ones - (ones & twos)
-                    else:
-                        ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
-                    st.table(cr_metrics_table(ck_flags, ones, twos))
+                if flag_radio == 'Yes': ones, twos = cr_set_flags(table, ck_flags, flag_radio, flags_col, notes_col, con_checks_id_col)
                            
                 st.table(table_fin_res)
                 st.table(pd.DataFrame(list_prob_cases, columns = ['Variable', 'Country', 'Category', '% Value', 'Absolute values']))
@@ -806,8 +806,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                                 set_trend.add(inst)
                     st.table(pd.DataFrame([len(v) for v in dict_trend.values()], index = dict_trend.keys(), columns = ['Number of institutions']))
                   
-                    if flag_radio == 'Yes':
-                        st.table(cr_metrics_table(flag_notes_on, set_trend, ones, twos))
+                    if flag_radio == 'Yes': st.table(cr_metrics_table(set_trend, ones, twos))
 
                     trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
                     trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
@@ -897,17 +896,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             table['Prob inst ' + con_checks_feature] = 0
             table.loc[table[table[con_checks_id_col].isin(ck_flags)].index, 'Prob inst ' + con_checks_feature] = 1
 
-            if flag_radio == 'Yes':
-                if table[flags_col].dtypes == 'O':
-                    if notes_col == '-':
-                        ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p')][con_checks_id_col].values); twos = set()
-                    else:
-                        ones = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (pd.isna(table[notes_col]))][con_checks_id_col].values).union(set(table[table[flags_col] == 'p'][con_checks_id_col].values))
-                        twos = set(table[(-pd.isna(table[flags_col])) & (table[flags_col] != 'p') & (-pd.isna(table[notes_col]))][con_checks_id_col].values)
-                        ones = ones - (ones & twos)
-                else:
-                    ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
-                st.table(cr_metrics_table(ck_flags, ones, twos))
+            if flag_radio == 'Yes': ones, twos = cr_set_flags(table, ck_flags, flag_radio, flags_col, notes_col, con_checks_id_col)
 
             st.table(table_fin_res)
             if cat_sel_col == '-':
@@ -924,8 +913,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                         set_trend.add(inst)
             st.table(pd.DataFrame([len(v) for v in dict_trend.values()], index = dict_trend.keys(), columns = ['Number of institutions']))
          
-            if flag_radio == 'Yes':
-                st.table(cr_metrics_table(flag_notes_on, set_trend, ones, twos))
+            if flag_radio == 'Yes': st.table(cr_metrics_table(set_trend, ones, twos))
             
             trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
             trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
