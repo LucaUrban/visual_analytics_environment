@@ -63,21 +63,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
     lis_id_eu_nut3 = [el['properties']['id'] for el in eu_nut3['features']]
 
     # functions
-    def cr_metrics_table(flag_notes, set_entity, ones, twos = set()):
-        if flag_notes_on:
-            summ_table = pd.DataFrame([[str(len(twos.intersection(set_entity))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(set_entity))) / len(twos), 2)) + '%'], 
-                                       [str(len(set_entity)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(set_entity) / len(ones.union(twos))), 2)) + '%'], 
-                                       [str(len(set_entity.difference(ones.union(twos)))), str(round((100 * len(set_entity.difference(ones.union(twos)))) / len(set_entity), 2)) + '%']], 
-                                       columns = ['Absolute Values', 'In percentage'], 
-                                       index = ['Accuracy', 'new/prev cases', 'Extra cases'])
-        else:
-            summ_table = pd.DataFrame([[str(len(ones.intersection(set_entity))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(set_entity))) / len(ones), 2)) + '%'], 
-                                       [str(len(set_entity)) + ' / ' + str(len(ones)), str(round(100 * (len(set_entity) / len(ones)), 2)) + '%'], 
-                                       [str(len(set_entity.difference(ones))), str(round((100 * len(set_entity.difference(ones))) / len(set_entity), 2)) + '%']], 
-                                       columns = ['Absolute Values', 'In percentage'], 
-                                       index = ['Accuracy', 'new/prev cases', 'Extra cases'])
-        return summ_table
-    
     def map_creation(res, nut_col, map_feature, color):
         if color == 'Portland': m_color = px.colors.diverging.Portland
         if color == 'Picnic': m_color = px.colors.diverging.Picnic
@@ -134,6 +119,21 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             list_prob_cases = [[con_checks_feature, list_countries[j], list_un_cat[i], f'{round(tab_per[i, j], 2)}%', f'{DV_fin_res[i, j]}/{tab_abs[i, j]}']
                                 for i, j in np.argwhere(tab_per >= prob_cases_per)]
             return pd.DataFrame(list_fin_res, index = [f'{con_checks_feature} ({cat})' for cat in list_un_cat], columns = list_countries), list_prob_cases
+    
+    def cr_metrics_table(flag_notes, set_entity, ones, twos = set()):
+        if flag_notes_on:
+            summ_table = pd.DataFrame([[str(len(twos.intersection(set_entity))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(set_entity))) / len(twos), 2)) + '%'], 
+                                       [str(len(set_entity)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(set_entity) / len(ones.union(twos))), 2)) + '%'], 
+                                       [str(len(set_entity.difference(ones.union(twos)))), str(round((100 * len(set_entity.difference(ones.union(twos)))) / len(set_entity), 2)) + '%']], 
+                                       columns = ['Absolute Values', 'In percentage'], 
+                                       index = ['Accuracy', 'new/prev cases', 'Extra cases'])
+        else:
+            summ_table = pd.DataFrame([[str(len(ones.intersection(set_entity))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(set_entity))) / len(ones), 2)) + '%'], 
+                                       [str(len(set_entity)) + ' / ' + str(len(ones)), str(round(100 * (len(set_entity) / len(ones)), 2)) + '%'], 
+                                       [str(len(set_entity.difference(ones))), str(round((100 * len(set_entity.difference(ones))) / len(set_entity), 2)) + '%']], 
+                                       columns = ['Absolute Values', 'In percentage'], 
+                                       index = ['Accuracy', 'new/prev cases', 'Extra cases'])
+        return summ_table
     
     def cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_features, descr_col, flags_col):
         table_download = table.pivot(index = [con_checks_id_col], columns = [time_col], values = [con_checks_features])
@@ -790,19 +790,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                             ones = ones - (ones & twos)
                     else:
                         ones = set(table[table[flags_col] == 1][con_checks_id_col].values); twos = set(table[table[flags_col] == 2][con_checks_id_col].values)
-                    if flag_notes_on:
-                        summ_table = pd.DataFrame([[str(len(twos.intersection(ck_flags))) + ' over ' + str(len(twos)), str(round((100 * len(twos.intersection(ck_flags))) / len(twos), 2)) + '%'], 
-                                                   [str(len(ck_flags)) + ' / ' + str(len(ones.union(twos))), str(round(100 * (len(ck_flags) / len(ones.union(twos))), 2)) + '%'], 
-                                                   [str(len(ck_flags.difference(ones.union(twos)))), str(round((100 * len(ck_flags.difference(ones.union(twos)))) / len(ck_flags), 2)) + '%']], 
-                                                   columns = ['Absolute Values', 'In percentage'], 
-                                                   index = ['Accuracy', 'new/prev cases', 'Extra cases'])
-                    else:
-                        summ_table = pd.DataFrame([[str(len(ones.intersection(ck_flags))) + ' over ' + str(len(ones)), str(round((100 * len(ones.intersection(ck_flags))) / len(ones), 2)) + '%'], 
-                                                   [str(len(ck_flags)) + ' / ' + str(len(ones)), str(round(100 * (len(ck_flags) / len(ones)), 2)) + '%'], 
-                                                   [str(len(ck_flags.difference(ones))), str(round((100 * len(ck_flags.difference(ones))) / len(ck_flags), 2)) + '%']], 
-                                                   columns = ['Absolute Values', 'In percentage'], 
-                                                   index = ['Accuracy', 'new/prev cases', 'Extra cases'])
-                    st.table(summ_table)
+                    st.table(cr_metrics_table(flag_notes_on, ck_flags, ones, twos))
                            
                 st.table(table_fin_res)
                 st.table(pd.DataFrame(list_prob_cases, columns = ['Variable', 'Country', 'Category', '% Value', 'Absolute values']))
