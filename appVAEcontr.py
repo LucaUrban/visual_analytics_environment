@@ -773,14 +773,12 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 dict_flags = dict(); ck_flags = set(); table['Rupt. years'] = ''
                 for cc in list_countries:
                     country_table = table[table[country_sel_col] == cc][[con_checks_id_col, con_checks_feature]]
-                    inst_lower = set(country_table[country_table[con_checks_feature] <= country_table[con_checks_feature].quantile(flag_issue_quantile/100)][con_checks_id_col].values)
-                    inst_upper = set(country_table[country_table[con_checks_feature] >= country_table[con_checks_feature].quantile(1 - (flag_issue_quantile/100))][con_checks_id_col].values)
-                    dict_flags[cc] = inst_lower.union(inst_upper)
+                    dict_flags[cc] = set(country_table[(country_table[con_checks_feature] <= country_table[con_checks_feature].quantile(flag_issue_quantile/100)) &
+                                                       (country_table[con_checks_feature] >= country_table[con_checks_feature].quantile(1-(flag_issue_quantile/100)))][con_checks_id_col].values)
                 for cat in list_un_cat:
                     cat_table = table[table[cat_sel_col] == cat][[con_checks_id_col, con_checks_feature]]
-                    inst_lower = set(cat_table[cat_table[con_checks_feature] <= cat_table[con_checks_feature].quantile(flag_issue_quantile/100)][con_checks_id_col].values)
-                    inst_upper = set(cat_table[cat_table[con_checks_feature] >= cat_table[con_checks_feature].quantile(1 - (flag_issue_quantile/100))][con_checks_id_col].values)
-                    dict_flags[cat] = inst_lower.union(inst_upper)
+                    dict_flags[cat] = set(cat_table[(cat_table[con_checks_feature] <= cat_table[con_checks_feature].quantile(flag_issue_quantile/100)) & 
+                                                    (cat_table[con_checks_feature] >= cat_table[con_checks_feature].quantile(1-(flag_issue_quantile/100)))][con_checks_id_col].values)
                 
                 for key in dict_flags.keys():
                     ck_flags = ck_flags.union(dict_flags[key])
@@ -911,7 +909,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     dict_trend[list(dict_trend.keys())[class_tr-1]].append(inst)
                     if class_tr == 1 or class_tr == 3 or class_tr == 5:
                         set_trend.add(inst)
-            st.table(pd.DataFrame([len(v) for v in dict_trend.values()], index = dict_trend.keys(), columns = ['Number of institutions']))
+            st.table(pd.DataFrame([len(v) for v in dict_trend.values()], index = dict_trend.keys(), columns = ['Number of entities']))
          
             if flag_radio == 'Yes': st.table(cr_metrics_table(set_trend, ones, twos))
             
