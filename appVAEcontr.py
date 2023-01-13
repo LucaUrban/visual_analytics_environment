@@ -874,7 +874,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 pred = np.array([intercept + (i * coeff[0]) for i in range(len(not_na_val))])
                 diff = np.abs(not_na_val) - np.abs(pred)
                 diff_per = np.abs((100 * np.true_divide(diff, np.abs(not_na_val), out = np.zeros(diff.shape, dtype=float), where = np.abs(not_na_val)!=0)))
-                st.write(i in np.argwhere(diff_per > rupt_y_per))
+                st.write(np.argwhere(diff_per > rupt_y_per))
                 for i in np.argwhere(diff_per > rupt_y_per):
                     rupt_y += f'{not_na_years[i]}'
                     
