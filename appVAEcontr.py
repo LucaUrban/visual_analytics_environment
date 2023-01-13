@@ -879,7 +879,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     rupt_y += f'{not_na_years[i]}-'
                 
                 if rupt_y != '':
-                    st.write(rupt_y[:-1])
+                    st.write(table[table[con_checks_id_col] == id_inst].index)
                     table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt. Years'] = rupt_y
             
             # computation of the geometric mean
