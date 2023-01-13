@@ -879,8 +879,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     rupt_y += f'{not_na_years[i]}-'
                 
                 if rupt_y != '':
+                    st.write(rupt_y)
                     table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt. Years'] = rupt_y
-            st.write(table['Rupt. years'])
+            
             # computation of the geometric mean
             df_gm['Occ'] = df_gm.groupby(con_checks_id_col)[con_checks_id_col].transform('count')
             df_gm['Geo Mean'] = df_gm[con_checks_feature] ** (1 / df_gm['Occ'])
