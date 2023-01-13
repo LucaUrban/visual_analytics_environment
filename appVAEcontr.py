@@ -876,11 +876,11 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 diff_per = np.abs((100 * np.true_divide(diff, np.abs(not_na_val), out = np.zeros(diff.shape, dtype=float), where = np.abs(not_na_val)!=0)))
                 
                 for i in np.argwhere(diff_per > rupt_y_per):
-                    rupt_y += f'{not_na_years[i]}'
-                st.write(rupt_y)
+                    rupt_y += f'{not_na_years[i]}-'
+                
                 if rupt_y != '':
                     table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt. Years'] = rupt_y[:-1]
-            
+            st.write(table['Rupt. years'])
             # computation of the geometric mean
             df_gm['Occ'] = df_gm.groupby(con_checks_id_col)[con_checks_id_col].transform('count')
             df_gm['Geo Mean'] = df_gm[con_checks_feature] ** (1 / df_gm['Occ'])
