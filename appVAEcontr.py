@@ -928,10 +928,11 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
             trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
             try:
-                fig_trend = go.Figure()
+                fig_trend = go.Figure(); lim_plot = max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values)
                 fig_trend.add_trace(go.Scatter(x = table[table[con_checks_id_col] == trend_inst][time_col].values, 
                                                y = table[table[con_checks_id_col] == trend_inst][con_checks_feature].values, mode = "lines", name = "Values"))
                 fig_trend.add_trace(go.Scatter(x = dict_pred[trend_inst][1], y = dict_pred[trend_inst][0], mode = "lines", name = "Prediction"))
+                line_trend_ch_inst.update_yaxes(range = [0, 1.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values)])
                 st.plotly_chart(fig_trend, use_container_width=True)
             except:
                 st.warning('To produce the plot select a different combination of trend type and institution')
