@@ -927,6 +927,11 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             
             trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
             trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
+            fig_trend = go.Figure()
+            fig_tcc.add_trace(go.Scatter(x = table[table[con_checks_id_col] == trend_inst][con_checks_feature].values, 
+                                         y = table[table[con_checks_id_col] == trend_inst][time_col].values, 
+                                         mode = "lines", name = "Values"))
+            fig_tcc.add_trace(go.Scatter(x = dict_pred[trend_inst][1], y = dict_pred[trend_inst][0], mode = "lines", name = "Prediction"))
             try:
                 fig_trend = go.Figure()
                 fig_tcc.add_trace(go.Scatter(x = table[table[con_checks_id_col] == trend_inst][con_checks_feature].values, 
