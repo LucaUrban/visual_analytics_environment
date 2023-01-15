@@ -874,10 +874,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 pred = np.array([intercept + (i * coeff[0]) for i in range(len(not_na_val))])
                 diff = np.abs(not_na_val) - np.abs(pred)
                 diff_per = np.abs((100 * np.true_divide(diff, np.abs(not_na_val), out = np.zeros(diff.shape, dtype=float), where = np.abs(not_na_val)!=0)))
+                st.write(not_na_years)
                 rupt_y += '-'.join(f'{not_na_years[i]}' for i in np.argwhere(diff_per > rupt_y_per))
-                st.write(rupt_y)
-                if rupt_y != '':
-                    table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt years'] = rupt_y[:-1]
+                table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt years'] = rupt_y
             
             # computation of the geometric mean
             df_gm['Occ'] = df_gm.groupby(con_checks_id_col)[con_checks_id_col].transform('count')
