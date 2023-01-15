@@ -878,7 +878,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 rupt_y += '-'.join(f'{not_na_years[i][0]}' for i in np.argwhere(diff_per > rupt_y_per))
                 table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt years'] = rupt_y
                 dict_pred[id_inst] = [pred, not_na_years]
-            st.write(dict_pred)
             
             # computation of the geometric mean
             df_gm['Occ'] = df_gm.groupby(con_checks_id_col)[con_checks_id_col].transform('count')
@@ -930,10 +929,11 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
             try:
                 fig_trend = go.Figure()
-                line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_feature, time_col]], x = time_col, y = con_checks_feature)
-                line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_feature, time_col]], x = time_col, y = con_checks_feature)
-                line_trend_ch_inst.update_yaxes(range = [0, max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values) + (.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values))])
-                st.plotly_chart(line_trend_ch_inst, use_container_width=True)
+                fig_tcc.add_trace(go.Scatter(x = table[table[con_checks_id_col] == trend_inst][con_checks_feature], 
+                                             y = table[table[con_checks_id_col] == trend_inst][time_col], 
+                                             mode = "lines", name = "Values"))
+                fig_tcc.add_trace(go.Scatter(x = dict_pred[trend_inst][1], y = dict_pred[trend_inst][0], mode = "lines", name = "Prediction"))
+                st.plotly_chart(fig_trend, use_container_width=True)
             except:
                 st.warning('To produce the plot select a different combination of trend type and institution')
             
