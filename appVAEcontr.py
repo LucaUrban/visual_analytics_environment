@@ -843,7 +843,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     notes_col = st.selectbox("Notes variable", ['-'] + list(table.columns))
             
             # creation of the datasets variable for the geomtric mean and DV computation
-            table['Class trend'] = 0; table['Rupt. years'] = ''
+            table['Class trend'] = 0; table['Rupt years'] = ''
             df_DV = table[[con_checks_id_col, time_col, con_checks_feature]].sort_values(by = [con_checks_id_col, time_col], ascending = [True, False])
             df_DV = df_DV[~pd.isna(df_DV[con_checks_feature])]
             df_gm = df_DV[df_DV[con_checks_feature] != 0][[con_checks_id_col, con_checks_feature]]
@@ -879,8 +879,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     rupt_y += f'{not_na_years[i]}-'
                 
                 if rupt_y != '':
-                    st.write(1)
-                    table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt. Years'] = rupt_y
+                    table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt years'] = rupt_y[:-1]
+            st.write(table['Rupt years'])
             
             # computation of the geometric mean
             df_gm['Occ'] = df_gm.groupby(con_checks_id_col)[con_checks_id_col].transform('count')
