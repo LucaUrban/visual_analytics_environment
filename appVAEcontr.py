@@ -843,10 +843,11 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     notes_col = st.selectbox("Notes variable", ['-'] + list(table.columns))
             
             # creation of the datasets variable for the geomtric mean and DV computation
-            table['Class trend'] = 0; table['Rupt years'] = ''
+            table['Class trend'] = 0; table['Rupt years'] = ''; table['Prob inst ' + con_checks_feature] = 0
             df_DV = table[[con_checks_id_col, time_col, con_checks_feature]].sort_values(by = [con_checks_id_col, time_col], ascending = [True, False])
             df_DV = df_DV[~pd.isna(df_DV[con_checks_feature])]
             df_gm = df_DV[df_DV[con_checks_feature] != 0][[con_checks_id_col, con_checks_feature]]
+            dict_pred = dict()
             
             # trend classification
             for id_inst in df_gm[con_checks_id_col].unique():
@@ -876,6 +877,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 diff_per = np.abs((100 * np.true_divide(diff, np.abs(not_na_val), out = np.zeros(diff.shape, dtype=float), where = np.abs(not_na_val)!=0)))
                 rupt_y += '-'.join(f'{not_na_years[i][0]}' for i in np.argwhere(diff_per > rupt_y_per))
                 table.loc[table[table[con_checks_id_col] == id_inst].index, 'Rupt years'] = rupt_y
+                dict_pred[id_inst] = pred
+            st.write(dict_pred)
             
             # computation of the geometric mean
             df_gm['Occ'] = df_gm.groupby(con_checks_id_col)[con_checks_id_col].transform('count')
@@ -902,7 +905,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             else:
                 table_fin_res , list_prob_cases = cr_res_tables(table, ck_flags, con_checks_id_col, con_checks_feature, country_sel_col, list_countries, prob_cases_per)
             
-            table['Prob inst ' + con_checks_feature] = 0
             table.loc[table[table[con_checks_id_col].isin(ck_flags)].index, 'Prob inst ' + con_checks_feature] = 1
 
             if flag_radio == 'Yes': ones, twos = cr_set_flags(table, ck_flags, flag_radio, flags_col, notes_col, con_checks_id_col)
@@ -927,6 +929,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             trend_type = st.selectbox('Institution trend type', list(dict_trend.keys()), 0)
             trend_inst = st.selectbox('Institution to vizualize', dict_trend[trend_type])
             try:
+                fig_trend = go.Figure()
+                line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_feature, time_col]], x = time_col, y = con_checks_feature)
                 line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_feature, time_col]], x = time_col, y = con_checks_feature)
                 line_trend_ch_inst.update_yaxes(range = [0, max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values) + (.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_feature].values))])
                 st.plotly_chart(line_trend_ch_inst, use_container_width=True)
