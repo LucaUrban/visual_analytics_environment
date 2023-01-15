@@ -154,15 +154,15 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         table_download.rename(columns = str, inplace = True)
         t_col = [str(el) for el in sorted(table[time_col].unique())]; list_fin = []
         if flags_col != '':
-            table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', flags_col, 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
+            table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', flags_col, 'Prob inst ' + con_checks_features, 'Rupt years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
                                                  on = con_checks_id_col)
             table_download.rename(columns = {'Class trend': 'Trend', flags_col: 'Existing flag', 'Prob inst ' + con_checks_features: 'Detected case'}, inplace = True)
-            df_cols = descr_col + ['Variable'] + t_col + ['Trend', 'Existing flag', 'Detected case', 'Rupt. years']
+            df_cols = descr_col + ['Variable'] + t_col + ['Trend', 'Existing flag', 'Detected case', 'Rupt years']
         else:
-            table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', 'Prob inst ' + con_checks_features, 'Rupt. years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
+            table_download = table_download.join(table[[con_checks_id_col] + descr_col + ['Class trend', 'Prob inst ' + con_checks_features, 'Rupt years']].groupby([con_checks_id_col]).agg(pd.Series.mode), 
                                                  on = con_checks_id_col)
             table_download.rename(columns = {'Class trend': 'Trend', 'Prob inst ' + con_checks_features: 'Detected case'}, inplace = True)
-            df_cols = descr_col + ['Variable'] + t_col + ['Trend', 'Detected case', 'Rupt. years']
+            df_cols = descr_col + ['Variable'] + t_col + ['Trend', 'Detected case', 'Rupt years']
         table_download['Variable'] = con_checks_features
         table_download = table_download[df_cols]
         table_download.replace({'Trend': {i+1 : list(dict_trend.keys())[i] for i in range(len(list(dict_trend.keys())))}}, inplace = True)
