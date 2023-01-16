@@ -662,21 +662,22 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                               index = ['Number'], columns = out_types))
         
         # a more specific view of the ouliers by country or generic id and type
+        tab_only_out = table[table['Outlier category'].isin(out_types)]
         left, right = st.columns(2)
         with left: 
             out_id_col = st.selectbox("Outlier index col", table.columns, 0)
         with right:
-            out_type = st.selectbox("Outlier type", ['All', 'Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers'], 0)
+            ch_out_type = st.selectbox("Outlier type", ['All'] + out_types, 0)
         
-        if out_type == 'All':
-            res = pd.DataFrame([[nut, table[(table[out_id_col] == nut) & (table['Outlier category'].isin(out_types))].shape[0]] for nut in table[out_id_col].unique()], 
+        if ch_out_type == 'All':
+            res = pd.DataFrame([[nut, tab_only_out[tab_only_out[out_id_col] == nut].shape[0]] for nut in tab_only_out[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
             except:
                 st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
         else:
-            res = pd.DataFrame([[nut, table[(table[out_id_col] == nut) & (table['Outlier category'] == out_type)].shape[0]] for nut in table[out_id_col].unique()], 
+            res = pd.DataFrame([[nut, table[(table[out_id_col] == nut) & (table['Outlier category'] == ch_out_type)].shape[0]] for nut in tab_only_out[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
@@ -686,9 +687,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         out_cou = st.selectbox("Choose the specific value for the id", ['All ids'] + list(res[out_id_col]), 0)
          
         if out_cou == 'All ids': 
-            st.write(table[table['Outlier category'].isin(out_types)])
+            st.write(tab_only_out)
         else:
-            st.write(table[(table['Outlier category'].isin(out_types)) & (df_AllOut[out_id_col] == out_cou)]) 
+            st.write(tab_only_out[tab_only_out[out_id_col] == out_cou]) 
         
     if widget == "Consistency checks":
         methodology = st.sidebar.selectbox("Analysis to apply", ['Multiannual analysis', 'Ratio analysis'], 0)
