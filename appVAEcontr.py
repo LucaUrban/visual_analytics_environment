@@ -684,7 +684,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             except:
                 st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
         
-        out_cou = st.selectbox("Choose the specific value for the id", ['All ids'] + list(res[out_id_col]), 0)
+        out_cou = st.selectbox("Choose the specific value for the id", ['All ids'] + list(tab_only_out[out_id_col].unique()), 0)
          
         if out_cou == 'All ids': 
             st.write(tab_only_out)
