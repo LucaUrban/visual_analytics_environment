@@ -690,7 +690,13 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         if out_cou == 'All ids': 
             st.write(tab_only_out)
         else:
-            st.write(tab_only_out[tab_only_out[out_id_col] == out_cou]) 
+            st.write(tab_only_out[tab_only_out[out_id_col] == out_cou])
+                  
+        st.write('To download the results select the descriptive columns you want from the next field and then click the Download data button')
+        descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
+
+        st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
+                           data = tab_only_out[[out_id_col] + descr_col + [use_col, 'Outlier category']].to_csv(sep = ';').encode('utf-8'))
         
     if widget == "Consistency checks":
         methodology = st.sidebar.selectbox("Analysis to apply", ['Multiannual analysis', 'Ratio analysis'], 0)
