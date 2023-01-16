@@ -676,7 +676,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
             except:
                 st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
-                px.histogram(tab_only_out, x = out_id_col, color = 'Outlier category')
+                st.plotly_chart(px.histogram(tab_only_out, x = out_id_col, color = 'Outlier category'), use_container_width=True)
         else:
             res = pd.DataFrame([[nut, table[(table[out_id_col] == nut) & (table['Outlier category'] == ch_out_type)].shape[0]] for nut in tab_only_out[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
