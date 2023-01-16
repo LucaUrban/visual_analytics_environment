@@ -630,13 +630,14 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
         tukey_const = st.number_input("Tukey’s constant value", 0.5, 7.5, 1.5)
         Q3 = table[use_col].quantile(0.75); Q1 = table[use_col].quantile(0.25); ITQ = Q3- Q1
+        out_types = ['Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers']
+        table['Outlier category'] = 0
         
         if stats.skewtest(var_clean)[1] >= 0.025:
-            df_AllOut = table[(table[use_col] <= Q1 - (tukey_const * ITQ)) | (table[use_col] >= Q3 + (tukey_const * ITQ))]
-            df_StLeftOut = table[table[use_col] < Q1 - (2 * tukey_const * ITQ)]
-            df_WeLeftOut = table[(table[use_col] >= Q1 - (2 * tukey_const * ITQ)) & (table[use_col] <= Q1 - (tukey_const * ITQ))]
-            df_WeRightOut = table[(table[use_col] >= Q3 + (tukey_const * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * ITQ))]
-            df_StRightOut = table[table[use_col] > Q3 + (2 * tukey_const * ITQ)]
+            table.loc[table[table[use_col] < Q1 - (2 * tukey_const * ITQ)].index, 'Outlier category'] = out_types[0]
+            table.loc[table[(table[use_col] >= Q1 - (2 * tukey_const * ITQ)) & (table[use_col] <= Q1 - (tukey_const * ITQ))].index, 'Outlier category'] = out_types[1]
+            table.loc[table[(table[use_col] >= Q3 + (tukey_const * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * ITQ))].index, 'Outlier category'] = out_types[2]
+            table.loc[table[table[use_col] > Q3 + (2 * tukey_const * ITQ)].index, 'Outlier category'] = out_types[3]
         else:
             # calculating the medcouple function for the tukey fence
             if var_clean.shape[0] > 5000:
@@ -646,20 +647,19 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             
             # calculating the tukey fence
             if MC > 0:
-                df_AllOut = table[(table[use_col] <= Q1 - (tukey_const * math.exp(-4 * MC) * ITQ)) | (table[use_col] >= Q3 + (tukey_const * math.exp(3 * MC) * ITQ))]
-                df_StLeftOut = table[table[use_col] < Q1 - (2 * tukey_const * math.exp(-4 * MC) * ITQ)]
-                df_WeLeftOut = table[(table[use_col] >= Q1 - (2 * tukey_const * math.exp(-4 * MC) * ITQ)) & (table[use_col] <= Q1 - (tukey_const * math.exp(-4 * MC) * ITQ))]
-                df_WeRightOut = table[(table[use_col] >= Q3 + (tukey_const * math.exp(3 * MC) * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * math.exp(3 * MC) * ITQ))]
-                df_StRightOut = table[table[use_col] > Q3 + (2 * tukey_const * math.exp(3 * MC) * ITQ)]
+                table.loc[table[table[use_col] < Q1 - (2 * tukey_const * math.exp(-4 * MC) * ITQ)].index, 'Outlier category'] = out_types[0]
+                table.loc[table[(table[use_col] >= Q1 - (2 * tukey_const * math.exp(-4 * MC) * ITQ)) & (table[use_col] <= Q1 - (tukey_const * math.exp(-4 * MC) * ITQ))].index, 'Outlier category'] = out_types[1]
+                table.loc[table[(table[use_col] >= Q3 + (tukey_const * math.exp(3 * MC) * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * math.exp(3 * MC) * ITQ))].index, 'Outlier category'] = out_types[2]
+                table.loc[table[table[use_col] > Q3 + (2 * tukey_const * math.exp(3 * MC) * ITQ)].index, 'Outlier category'] = out_types[3]
             else:
-                df_AllOut = table[(table[use_col] <= Q1 - (tukey_const * math.exp(-3 * MC) * ITQ)) | (table[use_col] >= Q3 + (tukey_const * math.exp(4 * MC) * ITQ))]
-                df_StLeftOut = table[table[use_col] < Q1 - (2 * tukey_const * math.exp(-3 * MC) * ITQ)]
-                df_WeLeftOut = table[(table[use_col] >= Q1 - (2 * tukey_const * math.exp(-3 * MC) * ITQ)) & (table[use_col] <= Q1 - (tukey_const * math.exp(-3 * MC) * ITQ))]
-                df_WeRightOut = table[(table[use_col] >= Q3 + (tukey_const * math.exp(4 * MC) * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * math.exp(4 * MC) * ITQ))]
-                df_StRightOut = table[table[use_col] > Q3 + (2 * tukey_const * math.exp(4 * MC) * ITQ)]
+                table.loc[table[table[use_col] < Q1 - (2 * tukey_const * math.exp(-3 * MC) * ITQ)].index, 'Outlier category'] = out_types[0]
+                table.loc[table[(table[use_col] >= Q1 - (2 * tukey_const * math.exp(-3 * MC) * ITQ)) & (table[use_col] <= Q1 - (tukey_const * math.exp(-3 * MC) * ITQ))].index, 'Outlier category'] = out_types[1]
+                table.loc[table[(table[use_col] >= Q3 + (tukey_const * math.exp(4 * MC) * ITQ)) & (table[use_col] <= Q3 + (2 * tukey_const * math.exp(4 * MC) * ITQ))].index, 'Outlier category'] = out_types[2]
+                table.loc[table[table[use_col] > Q3 + (2 * tukey_const * math.exp(4 * MC) * ITQ)].index, 'Outlier category'] = out_types[3]
                 
-        st.table(pd.DataFrame(np.array([df_StLeftOut.shape[0], df_WeLeftOut.shape[0], df_WeRightOut.shape[0], df_StRightOut.shape[0]]).reshape(1, 4),
-                              index = ['Number'], columns = ['Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers']))
+        st.table(pd.DataFrame(np.array([table[table['Outlier category'] == out_types[0]].shape[0], table[table['Outlier category'] == out_types[1]].shape[0], 
+                                        table[table['Outlier category'] == out_types[2]].shape[0], table[table['Outlier category'] == out_types[3]].shape[0]]).reshape(1, 4),
+                              index = ['Number'], columns = out_types))
         
         # a more specific view of the ouliers by country or generic id and type
         left, right = st.columns(2)
@@ -669,39 +669,14 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             out_type = st.selectbox("Outlier type", ['All', 'Strong left outliers', 'Weak left outliers', 'Weak right outliers', 'Strong right outliers'], 0)
         
         if out_type == 'All':
-            res = pd.DataFrame([[nut, df_AllOut[df_AllOut[out_id_col] == nut].shape[0]] for nut in df_AllOut[out_id_col].unique()], 
+            res = pd.DataFrame([[nut, table[(table[out_id_col] == nut) & (table['Outlier category'].isin(out_types))].shape[0]] for nut in table[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
             except:
                 st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
-         
-        if out_type == 'Strong left outliers':
-            res = pd.DataFrame([[nut, df_StLeftOut[df_StLeftOut[out_id_col] == nut].shape[0]] for nut in df_StLeftOut[out_id_col].unique()], 
-                               columns = [out_id_col, 'Num. Out.'])
-            try: 
-                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
-            except:
-                st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
-            
-        if out_type == 'Weak left outliers':
-            res = pd.DataFrame([[nut, df_WeLeftOut[df_WeLeftOut[out_id_col] == nut].shape[0]] for nut in df_WeLeftOut[out_id_col].unique()], 
-                               columns = [out_id_col, 'Num. Out.'])
-            try: 
-                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
-            except:
-                st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
-            
-        if out_type == 'Weak right outliers':
-            res = pd.DataFrame([[nut, df_WeRightOut[df_WeRightOut[out_id_col] == nut].shape[0]] for nut in df_WeRightOut[out_id_col].unique()], 
-                               columns = [out_id_col, 'Num. Out.'])
-            try: 
-                st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
-            except:
-                st.warning('You have to select a NUTS id column in the selection box after \"Outlier index col\" to produce the map')
-            
-        if out_type == 'Strong right outliers':
-            res = pd.DataFrame([[nut, df_StRightOut[df_StRightOut[out_id_col] == nut].shape[0]] for nut in df_StRightOut[out_id_col].unique()], 
+        else:
+            res = pd.DataFrame([[nut, table[(table[out_id_col] == nut) & (table['Outlier category'] == out_type)].shape[0]] for nut in table[out_id_col].unique()], 
                                columns = [out_id_col, 'Num. Out.'])
             try: 
                 st.plotly_chart(map_creation(res, out_id_col, 'Num. Out.', map_color), use_container_width=True)
@@ -711,9 +686,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         out_cou = st.selectbox("Choose the specific value for the id", ['All ids'] + list(res[out_id_col]), 0)
          
         if out_cou == 'All ids': 
-            st.write(df_AllOut)
+            st.write(table[table['Outlier category'].isin(out_types)])
         else:
-            st.write(df_AllOut[df_AllOut[out_id_col] == out_cou]) 
+            st.write(table[(table['Outlier category'].isin(out_types)) & (df_AllOut[out_id_col] == out_cou)]) 
         
     if widget == "Consistency checks":
         methodology = st.sidebar.selectbox("Analysis to apply", ['Multiannual analysis', 'Ratio analysis'], 0)
