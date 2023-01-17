@@ -553,8 +553,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             fig_tot.update_layout(height = 600)
             st.plotly_chart(fig_tot, use_container_width=True)
                   
-            st.plotly_chart(px.imshow(table[fea_Imp_features].corr(), x = fea_Imp_features,  y = fea_Imp_features, labels = dict(color = "Corr Value"), 
-                                      color_continuous_scale = px.colors.sequential.Hot), 
+            st.plotly_chart(px.imshow(table[fea_Imp_features + [feaImp_target]].corr(), 
+                                      x = fea_Imp_features + [feaImp_target],  y = fea_Imp_features + [feaImp_target], 
+                                      labels = dict(color = "Corr Value"), color_continuous_scale = px.colors.sequential.Hot), 
                             use_container_width=True)
         else:
             st.warning("Yuo have to choose at least two columns")
