@@ -475,7 +475,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             st.plotly_chart(fig_diff, use_container_width = True)
 
             st.subheader("Regression Parameters")
-            st.write(f"Intercept: {round(intercept, 4)} \nSlope: {round(coeff[0], 4)}")
+            st.write(f'Intercept: {round(intercept, 2)}'); st.write(f'Slope: {round(coeff[0], 2)}')
         else:
             st.warning("It wasn\'t possible to create the plot because of the lack of data")
     
