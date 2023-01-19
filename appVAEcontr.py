@@ -938,15 +938,19 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         scat_sel_col = st.sidebar.selectbox("Second category sel col", ['-'] + list(table.columns), 0)
         retain_quantile = st.sidebar.number_input("Quantile entities to retain", 0.0, 100.0, 5.0, 0.1)
         
-        # similarity calculation
         el_id = st.selectbox("Id time control charts", table[id_col].unique(), 0)
+         
+        # similarity calculation
+        dict_res = dict()
         for en_id in table[id_col].unique():
             if en_id != el_id:
                 el_val = table[(table[id_col] == el_id) & (~pd.isna(table[sim_feature]))][[id_col, time_col, sim_feature]]
                 en_val = table[(table[id_col] == en_id) & (~pd.isna(table[sim_feature]))][[id_col, time_col, sim_feature]]
                 
-                comm_year_tab = el_val.merge(en_val, on = time_col, how = 'inner')
-                st.write(comm_year_tab)
+                comm_year = el_val.merge(en_val, on = time_col, how = 'inner')
+                dict_res[en_id] = cosine_similarity(comm_year[f'{sim_feature}_x'].values, comm_year[f'{sim_feature}_y'].values)
+        df_res = pd.DataFrame(dict_res)
+        st.write(df_res)
             
         
         
