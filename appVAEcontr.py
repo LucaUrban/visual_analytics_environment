@@ -945,7 +945,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 el_val = table[(table[id_col] == el_id) & (~pd.isna(table[sim_feature]))][[id_col, time_col, sim_feature]]
                 en_val = table[(table[id_col] == en_id) & (~pd.isna(table[sim_feature]))][[id_col, time_col, sim_feature]]
                 
-                comm_year_tab = el_val.join(en_val, on = time_col, lsuffix = '_el', rsuffix = '_en', how = 'inner')
+                comm_year_tab = el_val.merge(en_val, on = time_col, how = 'inner')
         st.write(comm_year_tab)
             
         
