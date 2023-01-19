@@ -16,6 +16,7 @@ from plotly.colors import n_colors
 from sklearn.linear_model import Ridge, LinearRegression, ElasticNet, Lasso
 from sklearn.preprocessing import StandardScaler, normalize
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics.pairwise import cosine_similarity
 from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.stats.stattools import medcouple
