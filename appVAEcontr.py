@@ -563,7 +563,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         
     if widget == "Anomalies check":
         use_col = st.sidebar.selectbox("Chosen Variable", col_mul, 0)
-        map_color = st.selectbox("Map color-palette", ['Portland', 'Picnic', 'Geyser'], 0)
+        map_color = st.sidebar.selectbox("Map color-palette", ['Portland', 'Picnic', 'Geyser'], 0)
         var_clean = table[use_col].dropna().values
         
         # MLE normal
