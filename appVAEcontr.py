@@ -176,8 +176,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
     lis_check = [{'label': col, 'value': col} for col in col_mul if col != col_mul[0]]
 
     widget = st.selectbox("what is the widget you want to display:",
-                          ["Data View", "Geographical Analysis", "Mono dimensional Analysis", "Ratios Analysis", "Multi-dimensional Analysis", 
-                           "Autocorrelation Analysis", "Feature Importance Analysis", "Anomalies check", "Consistency checks", "Time series forecasting"], 0)
+                          ["Data View", "Geographical Analysis", "Mono dimensional Analysis", "Ratios Analysis", "Multi-dimensional Analysis", "Autocorrelation Analysis", 
+                           "Feature Importance Analysis", "Anomalies check", "Consistency checks", "Time series forecasting", "Time Similarity Aanalysis"], 0)
     
     if widget == "Data View":
         # showing the table with the data
@@ -927,4 +927,11 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
             st.download_button(label = "Download data with lables", file_name = 'result.csv', mime = 'text/csv',
                                data = cr_dnwl_tab_cc(table, con_checks_id_col, time_col, con_checks_feature, descr_col, flags_col))
-           
+
+    if widget == "Time Similarity Aanalysis":
+        st.header("Time Similarity Aanalysis")
+            
+            
+            
+            
+            
