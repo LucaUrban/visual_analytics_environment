@@ -942,11 +942,11 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
         el_id = st.selectbox("Id time control charts", table[id_col].unique(), 0)
         for en_id in table[id_col].unique():
             if en_id != el_id:
-                el_id_val = table[(table[id_col] == el_id) & (~pd.isna(table[sim_feature]))][[id_col, time_col, sim_feature]]
-                en_id_val = table[(table[id_col] == en_id) & (~pd.isna(table[sim_feature]))][[id_col, time_col, sim_feature]]
+                el_val = table[(table[id_col] == el_id) & (~pd.isna(table[sim_feature]))][[id_col, time_col, sim_feature]]
+                en_val = table[(table[id_col] == en_id) & (~pd.isna(table[sim_feature]))][[id_col, time_col, sim_feature]]
                 
-                comm_year_tab = el_id_val.join(en_id_val, on = time_col, lsuffix = '_el', rsuffix = '_en')
-                st.write(comm_year_tab)
+                comm_year_tab = el_val.join(en_val, on = time_col, lsuffix = '_el', rsuffix = '_en')
+                st.write(en_val)
             
         
         
