@@ -930,8 +930,29 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
 
     if widget == "Time Similarity Aanalysis":
         st.header("Time Similarity Aanalysis")
+
+        id_col = st.sidebar.selectbox("Index col", table.columns, 0)
+        time_col = st.sidebar.selectbox("Time column", table.columns)
+        sim_feature = st.sidebar.selectbox("Variable time series similarity", col_mul)
+        fcat_sel_col = st.sidebar.selectbox("First category sel col", ['-'] + list(table.columns), 0)
+        scat_sel_col = st.sidebar.selectbox("Second category sel col", ['-'] + list(table.columns), 0)
+        retain_quantile = st.sidebar.number_input("Quantile entities to retain", 0.0, 100.0, 5.0, 0.1)
+        
+        # similarity calculation
+        el_id = st.selectbox("Id time control charts", table[id_col].unique(), 0)
+        for en_id in table[id_col].unique():
+            if en_id != el_id:
+                el_id_val = table[(table[id_col] == el_id) & (~pd.isna(table[time_col]))][[id_col, time_col, sim_feature]]
+                en_id_val = table[(table[id_col] == en_id) & (~pd.isna(table[time_col]))][[id_col, time_col, sim_feature]]
+                
+                comm_year_tab = el_id_val.join(en_id_val, on = time_col)
+        st.write(comm_year_tab)
             
-            
-            
+        
+        
+        
+        
+        
+        
             
             
