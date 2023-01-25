@@ -948,8 +948,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 en_val = table[(table[id_col] == en_id) & (~pd.isna(table[sim_feature]))][[id_col, time_col, sim_feature]]
                 
                 comm_year = el_val.merge(en_val, on = time_col, how = 'inner')
-                dict_res[en_id] = cosine(comm_year[f'{sim_feature}_x'].values, comm_year[f'{sim_feature}_y'].values)
-        df_res = pd.DataFrame(dict_res)
+                dict_res[en_id] = 1-cosine(comm_year[f'{sim_feature}_x'].values, comm_year[f'{sim_feature}_y'].values)
+        df_res = pd.DataFrame(dict_res, index = df_res.keys(), columns = ['Cosine Similarity'])
         st.write(df_res)
             
         
