@@ -16,13 +16,13 @@ from plotly.colors import n_colors
 from sklearn.linear_model import Ridge, LinearRegression, ElasticNet, Lasso
 from sklearn.preprocessing import StandardScaler, normalize
 from sklearn.metrics import mean_squared_error
-from sklearn.metrics.pairwise import cosine_similarity
 from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.stats.stattools import medcouple
 import math
 import scipy.stats as stats
 from scipy.special import softmax
+from scipy.spatial.distance import cosine
 import pymannkendall as mk
 import csv
 
@@ -948,7 +948,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 en_val = table[(table[id_col] == en_id) & (~pd.isna(table[sim_feature]))][[id_col, time_col, sim_feature]]
                 
                 comm_year = el_val.merge(en_val, on = time_col, how = 'inner')
-                dict_res[en_id] = cosine_similarity(comm_year[f'{sim_feature}_x'].values, comm_year[f'{sim_feature}_y'].values)
+                dict_res[en_id] = cosine(comm_year[f'{sim_feature}_x'].values, comm_year[f'{sim_feature}_y'].values)
         df_res = pd.DataFrame(dict_res)
         st.write(df_res)
             
