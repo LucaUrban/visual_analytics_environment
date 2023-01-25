@@ -949,8 +949,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 
                 comm_year = el_val.merge(en_val, on = time_col, how = 'inner')
                 dict_res[en_id] = 1-cosine(comm_year[f'{sim_feature}_x'].values, comm_year[f'{sim_feature}_y'].values)
-        df_res = pd.DataFrame(dict_res, index = dict_res.keys(), columns = ['Cosine Similarity'])
-        st.write(dict_res)
+        df_res = pd.DataFrame.from_dict(dict_res)
+        st.write(df_res.describe)
             
         
         
