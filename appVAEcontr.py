@@ -835,30 +835,27 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             df_gm = df_DV[df_DV[con_checks_feature] != 0][[con_checks_id_col, con_checks_feature]]
             dict_pred = dict()
             
-            # trend classification
+            # trend classification with linear estimation
+            df_mk = df.groupby(con_checks_id_col)['Res mk'].agg(mk.original_test).reset_index()
+            df_mk['trend h p z Tau s var_s slope intercept'.split()]=[row for row in df_mk['Res mk']]
             for id_inst in df_gm[con_checks_id_col].unique():
-                inst = df_gm[df_gm[con_checks_id_col] == id_inst][con_checks_feature].values[::-1]
-                if inst.shape[0] > 3:
-                    mann_kend_res = mk.original_test(inst)
-                    trend, p, tau = mann_kend_res.trend, mann_kend_res.p, mann_kend_res.Tau
-                    if trend == 'increasing':
-                        table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 5
-                    if trend == 'decreasing':
-                        table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 1
-                    if trend == 'no trend':
-                        if p <= p_value_trend_per/100 and tau >= 0:
-                            table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 4
-                        if p <= p_value_trend_per/100 and tau < 0:
-                            table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 2
-                        if p > p_value_trend_per/100:
-                            table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
+                if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'increasing':
+                    table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 5
+                elif df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'decreasing':
+                    table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 1
+                else:
+                    if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] <= p_value_trend_per/100 and tau >= 0:
+                        table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 4
+                    if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] <= p_value_trend_per/100 and tau < 0:
+                        table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 2
+                    if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] > p_value_trend_per/100:
+                        table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
                                     
                 # issue flags about ruptures in the series
                 not_na_years = df_DV[df_DV[con_checks_id_col] == id_inst][time_col].values
                 not_na_val = df_DV[df_DV[con_checks_id_col] == id_inst][con_checks_feature].values
-                x = [[i, 0] for i in range(len(not_na_val))]; rupt_y = ''
-                reg = Ridge().fit(x, not_na_val); coeff = reg.coef_; intercept = reg.intercept_
-                pred = np.array([intercept + (i * coeff[0]) for i in range(len(not_na_val))])
+                intercept = df_mk[df_mk[con_checks_id_col] == id_inst]['intercept'].unique()[0]; slope = df_mk[df_mk[con_checks_id_col] == id_inst]['slope'].unique()[0]
+                rupt_y = ''; pred = np.array([intercept + (i * slope) for i in range(len(not_na_val))])
                 diff = np.abs(not_na_val) - np.abs(pred)
                 diff_per = np.abs((100 * np.true_divide(diff, np.abs(not_na_val), out = np.zeros(diff.shape, dtype=float), where = np.abs(not_na_val)!=0)))
                 rupt_y += '-'.join(f'{not_na_years[i][0]}' for i in np.argwhere(diff_per > rupt_y_per))
