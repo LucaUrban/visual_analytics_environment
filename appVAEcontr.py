@@ -840,9 +840,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             for id_inst in df_gm[con_checks_id_col].unique():
                 if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'increasing':
                     table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 5
-                elif df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'decreasing':
+                if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'decreasing':
                     table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 1
-                else:
+                if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'no trend':
                     if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] <= p_value_trend_per/100 and tau >= 0:
                         table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 4
                     if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] <= p_value_trend_per/100 and tau < 0:
