@@ -19,6 +19,7 @@ from sklearn.metrics import mean_squared_error
 from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.stats.stattools import medcouple
+import statsmodels.api.OLS as ols
 import math
 import scipy.stats as stats
 from scipy.special import softmax
