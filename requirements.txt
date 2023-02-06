@@ -1,5 +1,6 @@
 pip==23.0
 numpy==1.24.0
+pandas==1.5.3
 Cython==0.29.33
 plotly==5.11.0
 Scikit-learn==1.2.1
