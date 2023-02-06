@@ -1,6 +1,6 @@
 numpy==1.20.0
 Cython==0.29.33
 plotly==5.11.0
-Scikit-learn==0.22
+Scikit-learn==1.2.1
 statsmodels==0.12.2
 pymannkendall==1.4.2
