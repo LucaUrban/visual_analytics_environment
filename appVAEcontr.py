@@ -832,6 +832,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             df_DV = table[[con_checks_id_col, time_col, con_checks_feature]].sort_values(by = [con_checks_id_col, time_col], ascending = [True, False])
             df_DV = df_DV[~pd.isna(df_DV[con_checks_feature])]
             df_gm = df_DV[df_DV[con_checks_feature] != 0][[con_checks_id_col, con_checks_feature]]
+            st.write(df_gm)
             dict_pred = dict()
             
             # trend classification with linear estimation
