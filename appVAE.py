@@ -23,7 +23,6 @@ import math
 import scipy.stats as stats
 import pymannkendall as mk
 import csv
-from time import time
 
 st.title("Visual Information Quality Environment")
 st.write("In this part you can upload your csv file either dropping your file or browsing it. Then the application will start showing all of the charts for the Dataset. " +
@@ -992,7 +991,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                     notes_col = st.selectbox("Notes variable", ['-'] + list(table.columns))
                 
             res_ind = dict(); table['Class trend'] = 0; table['Rupt. years'] = ''
-            start = time()
+            
             for id_inst in table[con_checks_id_col].unique():
                 inst = table[table[con_checks_id_col] == id_inst][con_checks_features].values[::-1]
                 geo_mean_vec = np.delete(inst, np.where((inst == 0) | (np.isnan(inst))))
@@ -1159,7 +1158,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             line_trend_ch_inst = px.line(table[table[con_checks_id_col] == trend_inst][[con_checks_features, 'Reference year']], x = 'Reference year', y = con_checks_features)
             line_trend_ch_inst.update_yaxes(range = [0, max(table[table[con_checks_id_col] == trend_inst][con_checks_features].values) + (.05 * max(table[table[con_checks_id_col] == trend_inst][con_checks_features].values))])
             st.plotly_chart(line_trend_ch_inst, use_container_width=True)
-            st.write(time() - start)
+         
             st.write('To download the results select a time variable and then click the Download data button')
             left1, right1 = st.columns(2)
             with left1:
