@@ -835,8 +835,8 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             dict_pred = dict()
             
             # trend classification with linear estimation
-            df_mk = df_gm.groupby(con_checks_id_col)['Res mk'].agg(mk.original_test).reset_index()
-            df_mk['trend h p z Tau s var_s slope intercept'.split()]=[row for row in df_mk['Res mk']]
+            df_mk = df_gm.groupby(con_checks_id_col)[con_checks_feature].agg(mk.original_test).reset_index()
+            df_mk['trend h p z Tau s var_s slope intercept'.split()]=[row for row in df_mk[con_checks_feature]]
             for id_inst in df_gm[con_checks_id_col].unique():
                 if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'increasing':
                     table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 5
