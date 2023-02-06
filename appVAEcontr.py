@@ -833,7 +833,6 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             df_DV = df_DV[~pd.isna(df_DV[con_checks_feature])]
             df_gm = df_DV[df_DV[con_checks_feature] != 0][[con_checks_id_col, con_checks_feature]]
             df_gm_mk = (df_gm.groupby([con_checks_id_col]).filter(lambda x: x[con_checks_feature].nunique()>=3))
-            st.write(df_gm_mk)
             dict_pred = dict()
             
             # trend classification with linear estimation
@@ -845,9 +844,9 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'decreasing':
                     table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 1
                 if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'no trend':
-                    if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] <= p_value_trend_per/100 and tau >= 0:
+                    if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] <= p_value_trend_per/100 and df_mk[df_mk[con_checks_id_col] == id_inst]['Tau'].unique()[0] >= 0:
                         table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 4
-                    if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] <= p_value_trend_per/100 and tau < 0:
+                    if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] <= p_value_trend_per/100 and df_mk[df_mk[con_checks_id_col] == id_inst]['Tau'].unique()[0] < 0:
                         table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 2
                     if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] > p_value_trend_per/100:
                         table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
