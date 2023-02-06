@@ -840,14 +840,14 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             df_mk['trend h p z Tau s var_s slope intercept'.split()]=[row for row in df_mk[con_checks_feature]]
             for id_inst in df_gm_mk[con_checks_id_col].unique():
                 if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'increasing':
-                    table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 5
-                if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'decreasing':
                     table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 1
+                if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'decreasing':
+                    table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 5
                 if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'no trend':
                     if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] <= p_value_trend_per/100 and df_mk[df_mk[con_checks_id_col] == id_inst]['Tau'].unique()[0] >= 0:
-                        table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 4
-                    if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] <= p_value_trend_per/100 and df_mk[df_mk[con_checks_id_col] == id_inst]['Tau'].unique()[0] < 0:
                         table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 2
+                    if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] <= p_value_trend_per/100 and df_mk[df_mk[con_checks_id_col] == id_inst]['Tau'].unique()[0] < 0:
+                        table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 4
                     if df_mk[df_mk[con_checks_id_col] == id_inst]['p'].unique()[0] > p_value_trend_per/100:
                         table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 3
                                     
