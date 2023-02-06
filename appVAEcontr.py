@@ -832,13 +832,14 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             df_DV = table[[con_checks_id_col, time_col, con_checks_feature]].sort_values(by = [con_checks_id_col, time_col], ascending = [True, False])
             df_DV = df_DV[~pd.isna(df_DV[con_checks_feature])]
             df_gm = df_DV[df_DV[con_checks_feature] != 0][[con_checks_id_col, con_checks_feature]]
-            st.write(df_gm)
+            df_gm_mk = (df_gm.groupby([con_checks_id_col]).filter(lambda x: x[con_checks_feature].nunique()>=3))
+            st.write(df_gm_mk)
             dict_pred = dict()
             
             # trend classification with linear estimation
-            df_mk = df_gm.groupby(con_checks_id_col)[con_checks_feature].agg(mk.original_test).reset_index()
+            df_mk = df_gm_mk.groupby(con_checks_id_col)[con_checks_feature].agg(mk.original_test).reset_index()
             df_mk['trend h p z Tau s var_s slope intercept'.split()]=[row for row in df_mk[con_checks_feature]]
-            for id_inst in df_gm[con_checks_id_col].unique():
+            for id_inst in df_gm_mk[con_checks_id_col].unique():
                 if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'increasing':
                     table.loc[table[table[con_checks_id_col] == id_inst].index, 'Class trend'] = 5
                 if df_mk[df_mk[con_checks_id_col] == id_inst]['trend'].unique()[0] == 'decreasing':
