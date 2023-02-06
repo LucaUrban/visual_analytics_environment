@@ -25,6 +25,7 @@ from scipy.special import softmax
 from scipy.spatial.distance import cosine
 import pymannkendall as mk
 import csv
+from time import time
 
 st.title("Visual Information Quality Environment")
 st.write("In this part you can upload your csv file either dropping your file or browsing it. Then the application will start showing all of the charts for the Dataset. " +
@@ -836,6 +837,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
             dict_pred = dict()
             
             # trend classification with linear estimation
+            start = time()
             df_mk = df_gm_mk.groupby(con_checks_id_col)[con_checks_feature].agg(mk.original_test).reset_index()
             df_mk['trend h p z Tau s var_s slope intercept'.split()]=[row for row in df_mk[con_checks_feature]]
             for id_inst in df_gm_mk[con_checks_id_col].unique():
@@ -919,7 +921,7 @@ if demo_data_radio == 'Demo datset' or uploaded_file is not None:
                 st.plotly_chart(fig_trend, use_container_width=True)
             except:
                 st.warning('To produce the plot select a different combination of trend type and institution')
-            
+            st.write(time() - start)
             st.write('To download the results select a time variable and then click the Download data button')
             descr_col = st.multiselect("Select Descriptive columns to add to results (optional):", table.columns)
 
